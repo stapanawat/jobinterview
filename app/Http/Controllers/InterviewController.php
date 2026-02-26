@@ -53,9 +53,13 @@ class InterviewController extends Controller
         $applicant = Applicant::find($request->applicant_id);
         $applicant->update(['status' => 'scheduled']);
 
-        $this->sendFlexMessage($applicant, $interview);
-
-        return redirect()->route('dashboard')->with('success', 'นัดสัมภาษณ์เรียบร้อยแล้ว และส่งข้อความทาง LINE แล้ว!');
+        try {
+            $this->sendFlexMessage($applicant, $interview);
+            return redirect()->route('dashboard')->with('success', 'นัดสัมภาษณ์เรียบร้อยแล้ว และส่งข้อความทาง LINE แล้ว!');
+        } catch (\Exception $e) {
+            Log::error('LINE Push Error: ' . $e->getMessage());
+            return redirect()->route('dashboard')->with('error', 'บันทึกนัดสัมภาษณ์แล้ว แต่ส่งข้อความ LINE ไม่สำเร็จ: ' . substr($e->getMessage(), 0, 150));
+        }
     }
 
     private function sendFlexMessage($applicant, $interview)
@@ -120,10 +124,6 @@ class InterviewController extends Controller
             'messages' => [$message]
         ]);
 
-        try {
-            $messagingApi->pushMessage($request);
-        } catch (\Exception $e) {
-            Log::error('LINE Push Error: ' . $e->getMessage());
-        }
+        $messagingApi->pushMessage($request);
     }
 }
