@@ -16,6 +16,10 @@ RUN apt-get update && apt-get install -y \
     libsqlite3-dev \
     gettext-base
 
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
+
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -48,6 +52,8 @@ RUN chown -R www-data:www-data /var/www \
 
 # Install dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev
+RUN npm install
+RUN npm run build
 
 # Expose port
 EXPOSE 80
