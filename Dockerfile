@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     nginx \
     supervisor \
     sqlite3 \
-    libicu-dev
+    libicu-dev \
+    libsqlite3-dev
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
