@@ -13,6 +13,9 @@ php artisan view:cache
 # Run database migrations
 # Force is used to run migrations in production
 touch /var/www/database/database.sqlite
+chown -R www-data:www-data /var/www/database
+chmod -R 775 /var/www/database
+chmod 664 /var/www/database/database.sqlite
 php artisan migrate --force
 
 # Replace the $PORT environment variable in nginx.conf

@@ -43,7 +43,8 @@ COPY docker/php.ini /usr/local/etc/php/conf.d/app.ini
 # Set permissions for Laravel
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage \
-    && chmod -R 775 /var/www/bootstrap/cache
+    && chmod -R 775 /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/database
 
 # Install dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev
