@@ -12,6 +12,7 @@ php artisan view:cache
 
 # Run database migrations
 # Force is used to run migrations in production
+touch /var/www/database/database.sqlite
 php artisan migrate --force
 
 # Start Supervisor (which starts Nginx, PHP-FPM, and Queue Worker)
