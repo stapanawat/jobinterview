@@ -46,7 +46,7 @@
         </td>
         <td class="text-gray-500 text-xs">{{ $applicant->created_at->format('d/m/Y H:i') }}</td>
         <td>
-            <div class="flex items-center justify-center gap-2">
+            <div class="flex flex-wrap items-center justify-center gap-2 max-w-[200px] mx-auto">
                 <a href="{{ route('interviews.create', ['applicant' => $applicant->id]) }}"
                    class="btn btn-primary btn-sm">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -61,6 +61,15 @@
                    class="btn btn-secondary btn-sm">
                     ดูรีวิว
                 </a>
+                @if(in_array($applicant->status, ['scheduled', 'time_confirmed', 'attendance_confirmed', 'reschedule_requested']))
+                    <form action="{{ route('interviews.cancel', ['applicant' => $applicant->id]) }}" method="POST" class="inline w-full mt-1" onsubmit="return confirm('คุณต้องการยกเลิกการนัดสัมภาษณ์ผู้สมัครรายนี้ใช่หรือไม่?');">
+                        @csrf
+                        <button type="submit" class="btn btn-sm w-full flex justify-center items-center" style="background-color: #ef4444; color: white;">
+                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            ยกเลิกนัดสัมภาษณ์
+                        </button>
+                    </form>
+                @endif
             </div>
         </td>
     </tr>

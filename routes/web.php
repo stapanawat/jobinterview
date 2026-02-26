@@ -32,6 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/updates', [DashboardController::class, 'updates'])->name('dashboard.updates');
     Route::get('/interviews/create', [App\Http\Controllers\InterviewController::class, 'create'])->name('interviews.create');
     Route::post('/interviews', [App\Http\Controllers\InterviewController::class, 'store'])->name('interviews.store');
+    Route::post('/interviews/{applicant}/cancel', [App\Http\Controllers\InterviewController::class, 'cancel'])->name('interviews.cancel');
 
     Route::get('/reviews', [App\Http\Controllers\ReviewController::class, 'index'])->name('reviews.index');
     Route::get('/reviews/create', [App\Http\Controllers\ReviewController::class, 'create'])->name('reviews.create');

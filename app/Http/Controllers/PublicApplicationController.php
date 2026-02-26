@@ -5,6 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Applicant;
 use Illuminate\Support\Facades\Log;
+use LINE\Clients\MessagingApi\Api\MessagingApiApi;
+use LINE\Clients\MessagingApi\Configuration;
+use LINE\Clients\MessagingApi\Model\PushMessageRequest;
+use LINE\Clients\MessagingApi\Model\TextMessage;
+use GuzzleHttp\Client;
 
 class PublicApplicationController extends Controller
 {
@@ -80,7 +85,7 @@ class PublicApplicationController extends Controller
             ]
         );
 
-        Log::info("New web application from: {$applicant->name} (LINE: {$applicant->line_user_id})");
+
 
         return response()->json(['success' => true, 'message' => 'สมัครงานสำเร็จ!']);
     }

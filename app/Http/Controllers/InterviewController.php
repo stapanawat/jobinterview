@@ -108,6 +108,16 @@ class InterviewController extends Controller
                             'label' => 'ขอเลื่อน',
                             'data' => "action=reschedule&interview_id={$interview->id}",
                         ])
+                    ]),
+                    new FlexButton([
+                        'type' => 'button',
+                        'style' => 'link',
+                        'color' => '#6c757d',
+                        'action' => new PostbackAction([
+                            'type' => 'postback',
+                            'label' => 'ยกเลิกนัด',
+                            'data' => "action=cancel&interview_id={$interview->id}",
+                        ])
                     ])
                 ]
             ])
@@ -124,6 +134,47 @@ class InterviewController extends Controller
             'messages' => [$message]
         ]);
 
-        $messagingApi->pushMessage($request);
+        try {
+            $messagingApi->pushMessage($request);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to send LINE interview invitation to {$applicant->name}: " . $e->getMessage());
+            // We don't throw the error so the interview is still saved in DB even if LINE fails
+        }
+    }
+
+    public function cancel($applicantId)
+    {
+        $applicant = Applicant::findOrFail($applicantId);
+
+        $interview = $applicant->interviews()->whereNotIn('status', ['cancelled'])->latest()->first();
+        if ($interview) {
+            $interview->update(['status' => 'cancelled']);
+        }
+
+        $applicant->update(['status' => 'cancelled']);
+
+        // Send cancellation message via LINE
+        $client = new Client();
+        $config = new Configuration();
+        $config->setAccessToken(env('LINE_BOT_CHANNEL_ACCESS_TOKEN'));
+        $messagingApi = new MessagingApiApi(client: $client, config: $config);
+
+        $message = new \LINE\Clients\MessagingApi\Model\TextMessage([
+            'type' => 'text',
+            'text' => "ขออภัยครับ ทาง HR ได้มีการยกเลิกการนัดหมายสัมภาษณ์ของคุณเรียบร้อยแล้ว หากมีข้อสงสัยเพิ่มเติม สามารถพิมพ์สอบถามทิ้งไว้ได้เลยครับ"
+        ]);
+
+        $request = new PushMessageRequest([
+            'to' => $applicant->line_user_id,
+            'messages' => [$message]
+        ]);
+
+        try {
+            $messagingApi->pushMessage($request);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to send cancellation to {$applicant->name}: " . $e->getMessage());
+        }
+
+        return redirect()->route('dashboard')->with('success', 'ยกเลิกการนัดสัมภาษณ์เรียบร้อยแล้ว');
     }
 }

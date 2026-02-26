@@ -559,6 +559,8 @@
             } catch (err) {
                 console.error('LIFF init failed:', err);
                 // Fallback: show form anyway (for testing in browser)
+                document.getElementById('line_user_id').value = 'dummy_user_id_' + Math.floor(Math.random() * 1000000);
+                document.getElementById('line_display_name').value = 'Guest User';
                 document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('form-section').style.display = 'block';
             }
@@ -617,17 +619,32 @@
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
                     },
                     body: formData,
                 });
 
                 const result = await response.json();
 
-                if (result.success) {
-                    document.getElementById('form-section').style.display = 'none';
-                    document.getElementById('success-screen').style.display = 'block';
+                if (response.ok && result.success) {
+                    if (typeof liff !== 'undefined' && liff.isLoggedIn() && liff.isInClient()) {
+                        liff.sendMessages([{
+                            type: 'text',
+                            text: 'ยืนยันการส่งใบสมัคร'
+                        }]).then(() => {
+                            liff.closeWindow();
+                        }).catch((err) => {
+                            console.error('liff.sendMessages error', err);
+                            document.getElementById('form-section').style.display = 'none';
+                            document.getElementById('success-screen').style.display = 'block';
+                        });
+                    } else {
+                        document.getElementById('form-section').style.display = 'none';
+                        document.getElementById('success-screen').style.display = 'block';
+                    }
                 } else {
-                    alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                    console.error('Validation errors:', result.errors || result.message);
+                    alert('เกิดข้อผิดพลาด: ' + (result.message || 'กรุณาลองใหม่อีกครั้ง'));
                     btn.disabled = false;
                     btn.querySelector('.btn-text').style.display = 'inline';
                     btn.querySelector('.spinner').style.display = 'none';
