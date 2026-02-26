@@ -44,7 +44,12 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Copy custom PHP configuration
 COPY docker/php.ini /usr/local/etc/php/conf.d/app.ini
 
-# Set permissions for Laravel
+# Install dependencies
+RUN composer install --no-interaction --optimize-autoloader --no-dev
+RUN npm install
+RUN npm run build
+
+# Set permissions for Laravel and compiled assets
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage \
     && chmod -R 775 /var/www/bootstrap/cache \
@@ -52,8 +57,6 @@ RUN chown -R www-data:www-data /var/www \
 
 # Install dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev
-RUN npm install
-RUN npm run build
 
 # Expose port
 EXPOSE 80
