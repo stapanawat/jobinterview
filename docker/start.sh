@@ -15,5 +15,9 @@ php artisan view:cache
 touch /var/www/database/database.sqlite
 php artisan migrate --force
 
+# Replace the $PORT environment variable in nginx.conf
+envsubst '${PORT}' < /etc/nginx/sites-enabled/default > /etc/nginx/sites-enabled/default.tmp
+mv /etc/nginx/sites-enabled/default.tmp /etc/nginx/sites-enabled/default
+
 # Start Supervisor (which starts Nginx, PHP-FPM, and Queue Worker)
-/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

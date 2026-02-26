@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     sqlite3 \
     libicu-dev \
-    libsqlite3-dev
+    libsqlite3-dev \
+    gettext-base
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -50,5 +51,8 @@ RUN composer install --no-interaction --optimize-autoloader --no-dev
 # Expose port
 EXPOSE 80
 
-# Start Supervisor (which starts Nginx and PHP-FPM)
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Make the startup script executable
+RUN chmod +x /var/www/docker/start.sh
+
+# Start using the custom startup script
+CMD ["/var/www/docker/start.sh"]
