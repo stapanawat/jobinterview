@@ -49,15 +49,15 @@
             </div>
         </div>
 
-        {{-- Scheduled --}}
+        {{-- Time Confirmed --}}
         <div class="stat-card">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">นัดสัมภาษณ์แล้ว</p>
-                    <p class="text-3xl font-bold text-blue-600 mt-1">{{ $stats['scheduled'] }}</p>
+                    <p class="text-sm font-medium text-gray-500">ยืนยันเวลานัด</p>
+                    <p class="text-3xl font-bold text-purple-600 mt-1">{{ $stats['time_confirmed'] }}</p>
                 </div>
-                <div class="stat-card-icon gradient-info">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <div class="stat-card-icon" style="background: linear-gradient(135deg, #a855f7, #7e22ce); color: white;">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
             </div>
         </div>
@@ -66,8 +66,8 @@
         <div class="stat-card">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500">ยืนยันแล้ว</p>
-                    <p class="text-3xl font-bold text-emerald-600 mt-1">{{ $stats['confirmed'] }}</p>
+                    <p class="text-sm font-medium text-gray-500">ยืนยันเข้าร่วม</p>
+                    <p class="text-3xl font-bold text-emerald-600 mt-1">{{ $stats['attendance_confirmed'] }}</p>
                 </div>
                 <div class="stat-card-icon gradient-success">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -119,8 +119,11 @@
                                     @case('scheduled')
                                         <span class="badge badge-blue">นัดสัมภาษณ์แล้ว</span>
                                         @break
-                                    @case('confirmed')
-                                        <span class="badge badge-green">ยืนยันแล้ว</span>
+                                    @case('time_confirmed')
+                                        <span class="badge badge-purple" style="background: #f3e8ff; color: #7e22ce;">ยืนยันเวลานัด</span>
+                                        @break
+                                    @case('attendance_confirmed')
+                                        <span class="badge badge-green">ยืนยันเข้าร่วม</span>
                                         @break
                                     @case('cancelled')
                                         <span class="badge badge-gray" style="background: #fee2e2; color: #dc2626;">ยกเลิก</span>

@@ -19,8 +19,11 @@
                 @case('scheduled')
                     <span class="badge badge-blue">นัดสัมภาษณ์แล้ว</span>
                     @break
-                @case('confirmed')
-                    <span class="badge badge-green">ยืนยันแล้ว</span>
+                @case('time_confirmed')
+                    <span class="badge badge-purple" style="background: #f3e8ff; color: #7e22ce;">ยืนยันเวลานัด</span>
+                    @break
+                @case('attendance_confirmed')
+                    <span class="badge badge-green">ยืนยันเข้าร่วม</span>
                     @break
                 @case('cancelled')
                     <span class="badge badge-gray" style="background: #fee2e2; color: #dc2626;">ยกเลิก</span>

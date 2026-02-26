@@ -28,7 +28,7 @@ class SendDayBeforeReminder extends Command
 
         $interviews = Interview::with('applicant')
             ->whereDate('interview_date', $tomorrow)
-            ->whereIn('status', ['scheduled', 'confirmed'])
+            ->whereIn('status', ['scheduled', 'time_confirmed'])
             ->where('day_before_reminder_sent', false)
             ->get();
 

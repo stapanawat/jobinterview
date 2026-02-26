@@ -70,25 +70,26 @@ class LineController extends Controller
             $interview = \App\Models\Interview::find($interviewId);
             if ($interview) {
                 // Prevent duplicate clicks
-                if ($action === 'confirm' && in_array($interview->status, ['confirmed', 'reschedule_requested'])) {
+                if ($action === 'confirm' && in_array($interview->status, ['time_confirmed', 'attendance_confirmed', 'reschedule_requested'])) {
                     $this->replyText($replyToken, "คุณได้ตอบกลับการนัดหมายนี้แล้วครับ");
                     return;
                 }
 
                 if ($action === 'confirm') {
-                    $interview->update(['status' => 'confirmed']);
-                    $interview->applicant->update(['status' => 'confirmed']);
-                    $this->replyText($replyToken, "ขอบคุณครับ ยืนยันการนัดสัมภาษณ์เรียบร้อยแล้ว แล้วพบกันครับ!");
+                    $interview->update(['status' => 'time_confirmed']);
+                    $interview->applicant->update(['status' => 'time_confirmed']);
+                    $this->replyText($replyToken, "ขอบคุณครับ ยืนยันเวลานัดสัมภาษณ์เรียบร้อยแล้ว แล้วพบกันครับ!");
                 } elseif ($action === 'reschedule') {
                     $interview->update(['status' => 'reschedule_requested']);
                     $interview->applicant->update(['status' => 'pending_review']);
                     $this->replyText($replyToken, "รับทราบครับ ทาง HR จะติดต่อกลับเพื่อทำการนัดหมายเวลาใหม่อีกครั้งครับ");
                 } elseif ($action === 'day_confirm') {
-                    if ($interview->day_before_confirmed) {
+                    if ($interview->day_before_confirmed || $interview->status === 'attendance_confirmed') {
                         $this->replyText($replyToken, "คุณได้ยืนยันแล้วครับ ขอบคุณครับ! 🙏");
                         return;
                     }
-                    $interview->update(['day_before_confirmed' => true]);
+                    $interview->update(['day_before_confirmed' => true, 'status' => 'attendance_confirmed']);
+                    $interview->applicant->update(['status' => 'attendance_confirmed']);
                     $this->replyText($replyToken, "✅ ยืนยันเรียบร้อย! ขอบคุณครับ\n\nแล้วพบกันพรุ่งนี้เวลา {$interview->interview_time}\n📍 {$interview->location}\n\nขอให้โชคดีครับ! 🙏");
                 } elseif ($action === 'day_cancel') {
                     $interview->update(['status' => 'cancelled']);

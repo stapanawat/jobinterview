@@ -33,7 +33,8 @@ class DashboardController extends Controller
             'total' => $applicants->count(),
             'pending' => $applicants->where('status', 'pending_review')->count(),
             'scheduled' => $applicants->where('status', 'scheduled')->count(),
-            'confirmed' => $applicants->where('status', 'confirmed')->count(),
+            'time_confirmed' => $applicants->where('status', 'time_confirmed')->count(),
+            'attendance_confirmed' => $applicants->where('status', 'attendance_confirmed')->count(),
         ];
     }
 }
