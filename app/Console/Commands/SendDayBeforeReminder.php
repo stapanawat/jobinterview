@@ -111,6 +111,7 @@ class SendDayBeforeReminder extends Command
                 $this->info("Day-before reminder sent to {$applicant->name}");
             } catch (\Exception $e) {
                 Log::error("Failed to send day-before reminder to {$applicant->name}: " . $e->getMessage());
+                $this->error("Failed to send to {$applicant->name}: " . $e->getMessage());
             }
         }
     }

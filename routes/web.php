@@ -7,7 +7,7 @@ use App\Http\Controllers\PublicApplicationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/login');
 });
 
 Route::post('/webhook/line', [LineController::class, 'handle']);
@@ -15,7 +15,12 @@ Route::post('/webhook/line', [LineController::class, 'handle']);
 // External Cron Jobs (For Render/Free Hosts)
 Route::get('/cron/remind-tomorrow', function () {
     \Illuminate\Support\Facades\Artisan::call('interviews:remind-day-before');
-    return response()->json(['status' => 'success', 'message' => 'Day before reminders sent (or checked)']);
+    $output = \Illuminate\Support\Facades\Artisan::output();
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Day before reminders sent (or checked)',
+        'log' => trim($output)
+    ]);
 });
 
 Route::get('/cron/remind-immediate', function () {
