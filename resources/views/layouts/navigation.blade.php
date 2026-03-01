@@ -9,8 +9,8 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-base font-bold text-white">LINE Job</h1>
-                <p class="text-xs text-gray-400">Interview System</p>
+                <h1 class="text-base font-bold text-white">PKS Recruit</h1>
+                <p class="text-xs text-gold-500">Petkaset.co</p>
             </div>
         </a>
     </div>

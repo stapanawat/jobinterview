@@ -1,52 +1,58 @@
 <x-guest-layout>
+    <h2 class="form-title">สมัครสมาชิก</h2>
+    <p class="form-subtitle" style="margin-bottom: 28px;">สร้างบัญชีเพื่อเข้าใช้งานระบบ</p>
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
         <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+        <div style="margin-bottom: 18px;">
+            <label for="name" class="pks-label">ชื่อ</label>
+            <input id="name" class="pks-input" type="text" name="name" value="{{ old('name') }}" required autofocus
+                autocomplete="name" placeholder="ชื่อ-นามสกุล">
+            @error('name')
+                <p class="pks-error">{{ $message }}</p>
+            @enderror
         </div>
 
         <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div style="margin-bottom: 18px;">
+            <label for="email" class="pks-label">อีเมล</label>
+            <input id="email" class="pks-input" type="email" name="email" value="{{ old('email') }}" required
+                autocomplete="username" placeholder="your@email.com">
+            @error('email')
+                <p class="pks-error">{{ $message }}</p>
+            @enderror
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div style="margin-bottom: 18px;">
+            <label for="password" class="pks-label">รหัสผ่าน</label>
+            <input id="password" class="pks-input" type="password" name="password" required autocomplete="new-password"
+                placeholder="••••••••">
+            @error('password')
+                <p class="pks-error">{{ $message }}</p>
+            @enderror
         </div>
 
         <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        <div style="margin-bottom: 24px;">
+            <label for="password_confirmation" class="pks-label">ยืนยันรหัสผ่าน</label>
+            <input id="password_confirmation" class="pks-input" type="password" name="password_confirmation" required
+                autocomplete="new-password" placeholder="••••••••">
+            @error('password_confirmation')
+                <p class="pks-error">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="pks-btn">
+            สมัครสมาชิก
+        </button>
     </form>
+
+    <!-- Login Link -->
+    <p style="text-align:center;margin-top:20px;font-size:0.82rem;color:#6B8F6E;">
+        มีบัญชีอยู่แล้ว?
+        <a href="{{ route('login') }}" style="color:#C9A84C;font-weight:500;text-decoration:none;">เข้าสู่ระบบ</a>
+    </p>
 </x-guest-layout>

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>สมัครงาน | LINE Job</title>
+    <title>สมัครงาน | PKS Recruit — Petkaset.co</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
@@ -17,7 +17,7 @@
 
         body {
             font-family: 'Noto Sans Thai', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0D1B0F 0%, #132815 100%);
             min-height: 100vh;
             padding: 0;
         }
@@ -39,7 +39,7 @@
         .header .logo {
             width: 60px;
             height: 60px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #2E7D32, #1B5E20);
             border-radius: 16px;
             display: inline-flex;
             align-items: center;
@@ -62,11 +62,11 @@
 
         /* Reviews Section */
         .reviews-section {
-            background: linear-gradient(135deg, #f8f9ff, #f0f0ff);
+            background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
             border-radius: 16px;
             padding: 16px;
             margin-bottom: 24px;
-            border: 1px solid #e8e8ff;
+            border: 1px solid #A5D6A7;
         }
 
         .reviews-header {
@@ -164,7 +164,7 @@
         .form-group textarea:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #2E7D32;
             background: #fff;
         }
 
@@ -186,8 +186,8 @@
         }
 
         .file-upload:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
+            border-color: #2E7D32;
+            background: #E8F5E9;
         }
 
         .file-upload input[type="file"] {
@@ -248,7 +248,7 @@
             width: 20px;
             height: 20px;
             margin-top: 2px;
-            accent-color: #667eea;
+            accent-color: #2E7D32;
             flex-shrink: 0;
         }
 
@@ -262,7 +262,7 @@
         .submit-btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #1B5E20, #2E7D32);
             color: #fff;
             border: none;
             border-radius: 12px;
@@ -276,7 +276,7 @@
 
         .submit-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgba(27, 94, 32, 0.4);
         }
 
         .submit-btn:disabled {
@@ -373,7 +373,7 @@
             height: 40px;
             border: 4px solid #e5e7eb;
             border-radius: 50%;
-            border-top-color: #667eea;
+            border-top-color: #2E7D32;
             animation: spin 0.8s linear infinite;
         }
 
@@ -389,7 +389,7 @@
             color: #1a1a2e;
             margin-bottom: 16px;
             padding-bottom: 8px;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #2E7D32;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -408,7 +408,7 @@
         <!-- Application Form -->
         <div id="form-section" style="display: none;">
             <div class="header">
-                <div class="logo">💼</div>
+                <div class="logo"><svg width="28" height="28" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
                 <h1>สมัครงาน</h1>
                 <p>กรอกข้อมูลเพื่อสมัครงานกับเรา</p>
             </div>
@@ -416,7 +416,7 @@
             <!-- Shop Reviews -->
             <div class="reviews-section">
                 <div class="reviews-header">
-                    <h3>⭐ รีวิวร้านค้า</h3>
+                    <h3><svg style="display:inline;vertical-align:middle;margin-right:4px;color:#f59e0b;" width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>รีวิวร้านค้า</h3>
                     @if($totalReviews > 0)
                         <span class="avg-rating">{{ number_format($avgRating, 1) }}/5 ({{ $totalReviews }})</span>
                     @endif
@@ -426,7 +426,7 @@
                 @else
                     @foreach($reviews as $review)
                         <div class="review-card">
-                            <div class="review-stars">@for($i = 0; $i < $review->rating; $i++)⭐@endfor</div>
+                            <div class="review-stars">@for($i = 0; $i < $review->rating; $i++)<svg style="display:inline;width:14px;height:14px;color:#f59e0b;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>@endfor</div>
                             <div class="review-comment">"{{ $review->comment ?: 'ไม่มีความคิดเห็น' }}"</div>
                             <div class="review-meta">{{ $review->created_at->diffForHumans() }}</div>
                         </div>
@@ -441,7 +441,7 @@
                 <input type="hidden" name="line_picture_url" id="line_picture_url">
 
                 <!-- Personal Info -->
-                <div class="section-title">📋 ข้อมูลส่วนตัว</div>
+                <div class="section-title"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg> ข้อมูลส่วนตัว</div>
 
                 <div class="form-group">
                     <label>ชื่อ-นามสกุล <span class="required">*</span></label>
@@ -461,7 +461,7 @@
                 </div>
 
                 <!-- Job Info -->
-                <div class="section-title" style="margin-top: 8px;">💼 ข้อมูลงาน</div>
+                <div class="section-title" style="margin-top: 8px;"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> ข้อมูลงาน</div>
 
                 <div class="form-group">
                     <label>ตำแหน่งที่ต้องการสมัคร <span class="required">*</span></label>
@@ -476,12 +476,12 @@
                 </div>
 
                 <!-- File Uploads -->
-                <div class="section-title" style="margin-top: 8px;">📎 แนบเอกสาร</div>
+                <div class="section-title" style="margin-top: 8px;"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> แนบเอกสาร</div>
 
                 <div class="form-group">
                     <label>รูปถ่าย</label>
                     <div class="file-upload" id="photo-upload">
-                        <div class="icon">📸</div>
+                        <div class="icon"><svg width="28" height="28" fill="none" stroke="#666" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg></div>
                         <div class="text">แตะเพื่ออัพโหลดรูปถ่าย</div>
                         <img class="preview" id="photo-preview">
                         <input type="file" name="photo" id="photo" accept="image/*"
@@ -492,7 +492,7 @@
                 <div class="form-group">
                     <label>สำเนาบัตรประชาชน</label>
                     <div class="file-upload" id="idcard-upload">
-                        <div class="icon">🪪</div>
+                        <div class="icon"><svg width="28" height="28" fill="none" stroke="#666" viewBox="0 0 24 24" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2"/><path stroke-linecap="round" d="M13 10h4M13 13h3M7 16c0-1.1.9-2 2-2h0a2 2 0 012 2"/></svg></div>
                         <div class="text">แตะเพื่ออัพโหลดสำเนาบัตรประชาชน</div>
                         <img class="preview" id="idcard-preview">
                         <input type="file" name="id_card_image" id="id_card_image" accept="image/*"
@@ -502,7 +502,7 @@
 
                 <!-- PDPA -->
                 <div class="pdpa-section">
-                    <h4>🔒 ข้อตกลงการคุ้มครองข้อมูลส่วนบุคคล (PDPA)</h4>
+                    <h4><svg style="display:inline;vertical-align:middle;margin-right:4px;" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>ข้อตกลงการคุ้มครองข้อมูลส่วนบุคคล (PDPA)</h4>
                     <p>ข้าพเจ้ายินยอมให้จัดเก็บ ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า
                         เพื่อวัตถุประสงค์ในการสมัครงานและการนัดหมายสัมภาษณ์
                         ข้อมูลจะถูกเก็บรักษาอย่างปลอดภัยและไม่ถูกเผยแพร่ต่อบุคคลที่สามโดยไม่ได้รับอนุญาต</p>
@@ -521,7 +521,7 @@
 
         <!-- Success Screen -->
         <div id="success-screen" class="success-screen">
-            <div class="icon">🎉</div>
+            <div class="icon"><svg width="48" height="48" fill="none" stroke="#2E7D32" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
             <h2>สมัครงานสำเร็จ!</h2>
             <p>ข้อมูลของคุณถูกส่งเรียบร้อยแล้ว<br>ทาง HR จะติดต่อกลับทาง LINE นะครับ</p>
             <button class="close-btn" onclick="closeLiff()">กลับ LINE</button>

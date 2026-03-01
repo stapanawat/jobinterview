@@ -2,46 +2,48 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
+    <h2 class="form-title">เข้าสู่ระบบ</h2>
+    <p class="form-subtitle" style="margin-bottom: 28px;">กรุณากรอกข้อมูลเพื่อเข้าใช้งานระบบ</p>
+
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
         <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div style="margin-bottom: 18px;">
+            <label for="email" class="pks-label">อีเมล</label>
+            <input id="email" class="pks-input" type="email" name="email" value="{{ old('email') }}" required autofocus
+                autocomplete="username" placeholder="your@email.com">
+            @error('email')
+                <p class="pks-error">{{ $message }}</p>
+            @enderror
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div style="margin-bottom: 18px;">
+            <label for="password" class="pks-label">รหัสผ่าน</label>
+            <input id="password" class="pks-input" type="password" name="password" required
+                autocomplete="current-password" placeholder="••••••••">
+            @error('password')
+                <p class="pks-error">{{ $message }}</p>
+            @enderror
         </div>
 
         <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+        <div style="margin-bottom:24px;">
+            <label for="remember_me" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input id="remember_me" type="checkbox" class="pks-checkbox" name="remember">
+                <span class="pks-remember">จดจำการเข้าสู่ระบบ</span>
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="pks-btn">
+            เข้าสู่ระบบ
+        </button>
     </form>
+
+    <!-- Register Link -->
+    <p style="text-align:center;margin-top:20px;font-size:0.82rem;color:#6B8F6E;">
+        ยังไม่มีบัญชี?
+        <a href="{{ route('register') }}" style="color:#C9A84C;font-weight:500;text-decoration:none;">สมัครสมาชิก</a>
+    </p>
 </x-guest-layout>

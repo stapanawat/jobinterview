@@ -6,18 +6,122 @@
         </div>
     </x-slot>
 
-    {{-- Success Alert --}}
+    {{-- Styled Alerts --}}
+    <style>
+        .pks-alert {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            animation: alertSlideIn 0.4s ease-out;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .pks-alert::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            border-radius: 14px 0 0 14px;
+        }
+        .pks-alert-success {
+            background: linear-gradient(135deg, #E8F5E9, #F1F8E9);
+            border: 1px solid #A5D6A7;
+            color: #1B5E20;
+        }
+        .pks-alert-success::before {
+            background: linear-gradient(180deg, #2E7D32, #1B5E20);
+        }
+        .pks-alert-error {
+            background: linear-gradient(135deg, #FFEBEE, #FFF3E0);
+            border: 1px solid #EF9A9A;
+            color: #B71C1C;
+        }
+        .pks-alert-error::before {
+            background: linear-gradient(180deg, #E53935, #B71C1C);
+        }
+        .pks-alert-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .pks-alert-success .pks-alert-icon {
+            background: linear-gradient(135deg, #2E7D32, #1B5E20);
+            color: white;
+        }
+        .pks-alert-error .pks-alert-icon {
+            background: linear-gradient(135deg, #E53935, #B71C1C);
+            color: white;
+        }
+        .pks-alert-text {
+            flex: 1;
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+        .pks-alert-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 8px;
+            color: inherit;
+            opacity: 0.5;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .pks-alert-close:hover {
+            opacity: 1;
+            background: rgba(0,0,0,0.06);
+        }
+        @keyframes alertSlideIn {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes alertFadeOut {
+            from { opacity: 1; transform: translateY(0); max-height: 100px; margin-bottom: 24px; }
+            to { opacity: 0; transform: translateY(-8px); max-height: 0; margin-bottom: 0; padding: 0; border: 0; }
+        }
+    </style>
+
     @if(session('success'))
-        <div class="mb-6 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-2xl">
-            <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-            <span class="text-sm font-medium">{{ session('success') }}</span>
+        <div class="pks-alert pks-alert-success" id="alertSuccess">
+            <div class="pks-alert-icon">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <span class="pks-alert-text">{{ session('success') }}</span>
+            <button class="pks-alert-close" onclick="this.parentElement.style.animation='alertFadeOut 0.3s ease-out forwards';">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
     @endif
 
     @if(session('error'))
-        <div class="mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl">
-            <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-            <span class="text-sm font-medium">{{ session('error') }}</span>
+        <div class="pks-alert pks-alert-error" id="alertError">
+            <div class="pks-alert-icon">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+            </div>
+            <span class="pks-alert-text">{{ session('error') }}</span>
+            <button class="pks-alert-close" onclick="this.parentElement.style.animation='alertFadeOut 0.3s ease-out forwards';">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
     @endif
 

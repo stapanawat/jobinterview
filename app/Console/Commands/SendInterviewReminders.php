@@ -54,9 +54,29 @@ class SendInterviewReminders extends Command
             if (!$applicant || !$applicant->line_user_id)
                 continue;
 
-            $text = "แจ้งเตือนการนัดสัมภาษณ์งานพรุ่งนี้ครับ\n\n📅 วันที่: " . Carbon::parse($interview->interview_date)->format('d/m/Y') . "\n⏰ เวลา: {$interview->interview_time}\n📍 สถานที่: {$interview->location}\n\nแล้วพบกันครับ!";
+            $dateFormatted = Carbon::parse($interview->interview_date)->format('d/m/Y');
+            $flexBubble = new \LINE\Clients\MessagingApi\Model\FlexBubble([
+                'type' => 'bubble',
+                'body' => new \LINE\Clients\MessagingApi\Model\FlexBox([
+                    'type' => 'box',
+                    'layout' => 'vertical',
+                    'contents' => [
+                        new \LINE\Clients\MessagingApi\Model\FlexText(['type' => 'text', 'text' => '🔔 เตือน: พรุ่งนี้มีสัมภาษณ์', 'weight' => 'bold', 'size' => 'lg', 'color' => '#007bff']),
+                        new \LINE\Clients\MessagingApi\Model\FlexText(['type' => 'text', 'text' => "ถึงคุณ {$applicant->name}", 'margin' => 'md']),
+                        new \LINE\Clients\MessagingApi\Model\FlexText(['type' => 'text', 'text' => "📅 วันที่: {$dateFormatted}", 'margin' => 'sm']),
+                        new \LINE\Clients\MessagingApi\Model\FlexText(['type' => 'text', 'text' => "⏰ เวลา: {$interview->interview_time}", 'margin' => 'sm']),
+                        new \LINE\Clients\MessagingApi\Model\FlexText(['type' => 'text', 'text' => "📍 สถานที่: {$interview->location}", 'margin' => 'sm', 'wrap' => true]),
+                        new \LINE\Clients\MessagingApi\Model\FlexText(['type' => 'text', 'text' => "แล้วพบกันครับ!", 'margin' => 'lg', 'size' => 'sm', 'color' => '#888888']),
+                    ],
+                ]),
+            ]);
 
-            $message = new TextMessage(['type' => 'text', 'text' => $text]);
+            $message = new \LINE\Clients\MessagingApi\Model\FlexMessage([
+                'type' => 'flex',
+                'altText' => 'แจ้งเตือนการนัดสัมภาษณ์งานพรุ่งนี้ครับ',
+                'contents' => $flexBubble,
+            ]);
+
             $request = new PushMessageRequest([
                 'to' => $applicant->line_user_id,
                 'messages' => [$message]
