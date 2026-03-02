@@ -12,14 +12,17 @@ Route::get('/', function () {
 
 Route::post('/webhook/line', [LineController::class, 'handle']);
 
+// Minimal Health Check for Render
+Route::get('/health', function () {
+    return response('OK', 200)->header('Content-Type', 'text/plain');
+});
+
 // External Cron Jobs (For Render/Free Hosts)
 Route::get('/cron/remind-tomorrow', function () {
     \Illuminate\Support\Facades\Artisan::call('interviews:remind-day-before');
-    $output = \Illuminate\Support\Facades\Artisan::output();
     return response()->json([
         'status' => 'success',
-        'message' => 'Day before reminders sent (or checked)',
-        'log' => trim($output)
+        'message' => 'Day before reminders checked'
     ]);
 });
 
