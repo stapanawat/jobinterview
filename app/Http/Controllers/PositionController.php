@@ -31,6 +31,11 @@ class PositionController extends Controller
         $data = $this->validatePosition($request);
         $data['is_active'] = true;
         Position::create($data);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'เพิ่มตำแหน่งงานสำเร็จ']);
+        }
+
         return back()->with('success', 'เพิ่มตำแหน่งงานสำเร็จ');
     }
 
@@ -54,12 +59,21 @@ class PositionController extends Controller
             ]);
         }
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'แก้ไขตำแหน่งงานสำเร็จ']);
+        }
+
         return back()->with('success', 'แก้ไขตำแหน่งงานสำเร็จ');
     }
 
-    public function destroy(Position $position)
+    public function destroy(Request $request, Position $position)
     {
         $position->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'ลบตำแหน่งงานสำเร็จ']);
+        }
+
         return back()->with('success', 'ลบตำแหน่งงานสำเร็จ');
     }
 }

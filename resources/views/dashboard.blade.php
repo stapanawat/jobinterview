@@ -362,7 +362,7 @@
                                             </button>
                                         @endif
                                     </form>
-                                    <form action="{{ route('positions.destroy', $position->id) }}" method="POST" class="inline" onsubmit="return confirm('คุณแน่ใจหรือไม่ที่จะลบตำแหน่งนีทิ้งถาวร?')">
+                                    <form action="{{ route('positions.destroy', $position->id) }}" method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="p-2 inline-flex items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-300 hover:bg-red-50 hover:shadow-sm rounded-xl transition-all duration-200" title="ลบตำแหน่งนี้">
@@ -995,6 +995,7 @@
                 form.dataset.ajaxAttached = "true";
 
                 form.addEventListener('submit', async function(e) {
+                    // Skip regular confirm deletions if they don't have preventDefault, but we WILL use preventDefault
                     e.preventDefault();
                     
                     const btn = form.querySelector('button[type="submit"]');
@@ -1008,36 +1009,49 @@
                     try {
                         const formData = new FormData(form);
                         
+                        // Detect if it's a delete form that needs confirmation
+                        if(form.querySelector('input[name="_method"]')?.value === 'DELETE') {
+                           if(!confirm('คุณแน่ใจหรือไม่ที่จะลบตำแหน่งนีทิ้งถาวร?')) {
+                               if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
+                               return;
+                           }
+                        }
+                        
                         const response = await fetch(form.action, {
                             method: form.method || 'POST',
                             body: formData,
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'text/html'
+                                'Accept': 'application/json'
                             }
                         });
 
-                        const html = await response.text();
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
+                        const result = await response.json();
                         
-                        // Replace positions content
-                        const newContent = doc.querySelector('#positions-content');
-                        if(newContent) {
-                            positionsContainer.innerHTML = newContent.innerHTML;
-                            attachAjaxForms(); 
-                        }
-
-                        // Replace flash messages
-                        const newFlash = doc.querySelector('#flash-messages');
-                        const currentFlash = document.querySelector('#flash-messages');
-                        if(newFlash && currentFlash) {
-                            currentFlash.innerHTML = newFlash.innerHTML;
+                        if (response.ok || response.status === 422) {
+                            if (result.success) {
+                                // 1. Close Modal if it's open
+                                closePositionModal();
+                                
+                                // 2. Show Success Alert dynamically
+                                showFloatingAlert(result.message || 'ดำเนินการสำเร็จ', 'success');
+                                
+                                // 3. Refresh the positions content silently
+                                await refreshPositionsContent();
+                            } else if (response.status === 422) {
+                                // Validation error
+                                const errorMsg = Object.values(result.errors || {}).flat().join('\n') || result.message || 'ข้อมูลไม่ถูกต้อง';
+                                showFloatingAlert(errorMsg, 'error');
+                            } else {
+                                showFloatingAlert(result.message || 'เกิดข้อผิดพลาด', 'error');
+                            }
+                        } else {
+                            throw new Error('Server returned ' + response.status);
                         }
 
                     } catch (err) {
                         console.error('AJAX Error:', err);
-                        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                        showFloatingAlert('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
                     } finally {
                         if (btn && document.body.contains(btn)) {
                             btn.innerHTML = originalHtml;
@@ -1047,6 +1061,70 @@
                 });
             });
         };
+
+        async function refreshPositionsContent() {
+            try {
+                const response = await fetch(window.location.href, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' }
+                });
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const newContent = doc.querySelector('#positions-content');
+                if(newContent) {
+                    // Update innerHTML but keep it visible since it was already open
+                    const container = document.getElementById('positions-content');
+                    const wasHidden = container.classList.contains('hidden');
+                    
+                    container.innerHTML = newContent.innerHTML;
+                    
+                    if(!wasHidden) {
+                        container.classList.remove('hidden');
+                    }
+                    
+                    attachAjaxForms(); 
+                }
+            } catch (e) {
+                console.error('Failed to refresh content', e);
+            }
+        }
+
+        function showFloatingAlert(message, type = 'success') {
+            const container = document.getElementById('flash-messages');
+            if(!container) return;
+
+            const div = document.createElement('div');
+            const alertClass = type === 'success' ? 'pks-alert-success' : 'pks-alert-error';
+            
+            const iconSvg = type === 'success' 
+                ? `<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>`
+                : `<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>`;
+
+            div.className = `pks-alert ${alertClass}`;
+            div.innerHTML = `
+                <div class="pks-alert-icon">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        ${iconSvg}
+                    </svg>
+                </div>
+                <span class="pks-alert-text">${message}</span>
+                <button class="pks-alert-close" onclick="this.parentElement.style.animation='alertFadeOut 0.3s ease-out forwards'; setTimeout(() => this.parentElement.remove(), 300);">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            `;
+            
+            // Append and auto-remove
+            container.appendChild(div);
+            setTimeout(() => {
+                if(div.parentElement) {
+                    div.style.animation = 'alertFadeOut 0.3s ease-out forwards';
+                    setTimeout(() => div.remove(), 300);
+                }
+            }, 4000);
+        }
 
         attachAjaxForms();
     });
