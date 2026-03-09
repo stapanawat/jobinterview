@@ -148,6 +148,7 @@
 
         .form-group input[type="text"],
         .form-group input[type="tel"],
+        .form-group input[type="number"],
         .form-group textarea,
         .form-group select {
             width: 100%;
@@ -408,7 +409,11 @@
         <!-- Application Form -->
         <div id="form-section" style="display: none;">
             <div class="header">
-                <div class="logo"><svg width="28" height="28" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+                <div class="logo"><svg width="28" height="28" fill="none" stroke="white" viewBox="0 0 24 24"
+                        stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg></div>
                 <h1>สมัครงาน</h1>
                 <p>กรอกข้อมูลเพื่อสมัครงานกับเรา</p>
             </div>
@@ -416,22 +421,48 @@
             <!-- Shop Reviews -->
             <div class="reviews-section">
                 <div class="reviews-header">
-                    <h3><svg style="display:inline;vertical-align:middle;margin-right:4px;color:#f59e0b;" width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>รีวิวร้านค้า</h3>
+                    <h3><svg style="display:inline;vertical-align:middle;margin-right:4px;color:#f59e0b;" width="16"
+                            height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>รีวิวร้านค้า</h3>
                     @if($totalReviews > 0)
                         <span class="avg-rating">{{ number_format($avgRating, 1) }}/5 ({{ $totalReviews }})</span>
                     @endif
                 </div>
+
+                <!-- Position Filter -->
+                @if(!$reviews->isEmpty())
+                <div style="margin-bottom: 10px;">
+                    <select id="review-position-filter" style="width: 100%; padding: 8px 12px; border: 2px solid #C8E6C9; border-radius: 10px; font-size: 13px; font-family: 'Noto Sans Thai', sans-serif; background: #fff; color: #333;">
+                        <option value="all">ทุกตำแหน่ง</option>
+                        @foreach($positions as $pos)
+                            <option value="{{ $pos->name }}">{{ $pos->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
+
+                <div id="reviews-container">
                 @if($reviews->isEmpty())
                     <div class="no-reviews">ยังไม่มีรีวิวในขณะนี้</div>
                 @else
                     @foreach($reviews as $review)
-                        <div class="review-card">
-                            <div class="review-stars">@for($i = 0; $i < $review->rating; $i++)<svg style="display:inline;width:14px;height:14px;color:#f59e0b;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>@endfor</div>
+                        <div class="review-card" data-position="{{ $review->applicant?->position ?? '' }}">
+                            <div class="review-stars">@for($i = 0; $i < $review->rating; $i++)<svg
+                                style="display:inline;width:14px;height:14px;color:#f59e0b;" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>@endfor</div>
                             <div class="review-comment">"{{ $review->comment ?: 'ไม่มีความคิดเห็น' }}"</div>
-                            <div class="review-meta">{{ $review->created_at->diffForHumans() }}</div>
+                            <div class="review-meta">
+                                {{ $review->applicant?->position ? $review->applicant->position . ' · ' : '' }}{{ $review->created_at->diffForHumans() }}
+                            </div>
                         </div>
                     @endforeach
                 @endif
+                </div>
             </div>
 
             <form id="application-form" enctype="multipart/form-data">
@@ -441,7 +472,11 @@
                 <input type="hidden" name="line_picture_url" id="line_picture_url">
 
                 <!-- Personal Info -->
-                <div class="section-title"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg> ข้อมูลส่วนตัว</div>
+                <div class="section-title"><svg width="18" height="18" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg> ข้อมูลส่วนตัว</div>
 
                 <div class="form-group">
                     <label>ชื่อ-นามสกุล <span class="required">*</span></label>
@@ -461,12 +496,38 @@
                 </div>
 
                 <!-- Job Info -->
-                <div class="section-title" style="margin-top: 8px;"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> ข้อมูลงาน</div>
+                <div class="section-title" style="margin-top: 8px;"><svg width="18" height="18" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg> ข้อมูลงาน</div>
 
                 <div class="form-group">
                     <label>ตำแหน่งที่ต้องการสมัคร <span class="required">*</span></label>
-                    <input type="text" name="position" id="position" placeholder="เช่น พนักงานบริการ, แคชเชียร์">
-                    <div class="error-text">กรุณากรอกตำแหน่ง</div>
+                    <select name="position" id="position">
+                        <option value="">-- กรุณาเลือกตำแหน่ง --</option>
+                        @foreach($positions as $position)
+                            <option value="{{ $position->name }}">{{ $position->name }}</option>
+                        @endforeach
+                    </select>
+                    <div class="error-text">กรุณาเลือกตำแหน่ง</div>
+
+                    <!-- Job Details Box -->
+                    <div id="job-details-box"
+                        style="display: none; margin-top: 12px; padding: 16px; background: #E8F5E9; border-radius: 12px; border: 1px solid #A5D6A7;">
+                        <h4
+                            style="font-size: 14px; font-weight: 700; color: #1B5E20; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            รายละเอียดงาน
+                        </h4>
+                        <div id="job-details-content" style="font-size: 13px; color: #333; line-height: 1.6;">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -475,13 +536,92 @@
                         placeholder="เช่น เคยทำงานร้านกาแฟ 1 ปี (ไม่บังคับ)"></textarea>
                 </div>
 
+                <!-- Additional Info -->
+                <div class="section-title" style="margin-top: 8px;"><svg width="18" height="18" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg> ข้อมูลเพิ่มเติม</div>
+
+                <div class="form-group">
+                    <label>ที่พักปัจจุบัน</label>
+                    <input type="text" name="current_residence" id="current_residence"
+                        placeholder="ระบุเขต/แขวง หรือจังหวัดที่พักอาศัย">
+                </div>
+
+                <div class="form-group">
+                    <label>ปัจจุบันทำอะไร</label>
+                    <input type="text" name="current_occupation" id="current_occupation"
+                        placeholder="เช่น ว่างงาน, ทำงานพาร์ทไทม์, เรียนอยู่">
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>อายุ (ปี)</label>
+                        <input type="number" name="age" id="age" placeholder="เช่น 25" min="18" max="100">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>มีบุตรกี่คน</label>
+                        <input type="number" name="number_of_children" id="number_of_children" placeholder="เช่น 0"
+                            min="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>จบการศึกษา (ระดับสูงสุด)</label>
+                    <input type="text" name="education_level" id="education_level" placeholder="เช่น ม.6, ปวส., ป.ตรี">
+                </div>
+
+                <div class="form-group">
+                    <label>ขับขี่รถจักรยานยนต์ได้หรือไม่</label>
+                    <select name="can_drive_motorcycle" id="can_drive_motorcycle">
+                        <option value="">-- กรุณาเลือก --</option>
+                        <option value="ได้ (มีใบขับขี่)">ได้ (มีใบขับขี่)</option>
+                        <option value="ได้ (ไม่มีใบขับขี่)">ได้ (ไม่มีใบขับขี่)</option>
+                        <option value="ไม่ได้">ไม่ได้</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>บุคคลที่ติดต่อแทนท่านได้ (ฉุกเฉิน)</label>
+                    <input type="text" name="emergency_contact" id="emergency_contact"
+                        placeholder="ระบุ ชื่อ-นามสกุล, เบอร์โทร, ความสัมพันธ์">
+                </div>
+
+                <div class="form-group">
+                    <label>เวลาทำงานที่สะดวก และ วันหยุดที่ต้องการ</label>
+                    <input type="text" name="preferred_working_hours" id="preferred_working_hours"
+                        placeholder="เช่น สะดวกทำกะเช้า, ขอหยุดวันอาทิตย์">
+                </div>
+
+                <div class="form-group">
+                    <label>อธิบายข้อดี-ข้อเสียของตัวท่านเอง</label>
+                    <textarea name="pros_and_cons" id="pros_and_cons"
+                        placeholder="อธิบายข้อดีและข้อเสียของคุณ..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>ความฝันในชีวิตของท่านคืออะไร</label>
+                    <textarea name="life_dream" id="life_dream"
+                        placeholder="เล่าความฝันหรือเป้าหมายในชีวิตของคุณ..."></textarea>
+                </div>
+
                 <!-- File Uploads -->
-                <div class="section-title" style="margin-top: 8px;"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg> แนบเอกสาร</div>
+                <div class="section-title" style="margin-top: 8px;"><svg width="18" height="18" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg> แนบเอกสาร</div>
 
                 <div class="form-group">
                     <label>รูปถ่าย</label>
                     <div class="file-upload" id="photo-upload">
-                        <div class="icon"><svg width="28" height="28" fill="none" stroke="#666" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg></div>
+                        <div class="icon"><svg width="28" height="28" fill="none" stroke="#666" viewBox="0 0 24 24"
+                                stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <circle cx="12" cy="13" r="3" />
+                            </svg></div>
                         <div class="text">แตะเพื่ออัพโหลดรูปถ่าย</div>
                         <img class="preview" id="photo-preview">
                         <input type="file" name="photo" id="photo" accept="image/*"
@@ -492,7 +632,12 @@
                 <div class="form-group">
                     <label>สำเนาบัตรประชาชน</label>
                     <div class="file-upload" id="idcard-upload">
-                        <div class="icon"><svg width="28" height="28" fill="none" stroke="#666" viewBox="0 0 24 24" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2"/><path stroke-linecap="round" d="M13 10h4M13 13h3M7 16c0-1.1.9-2 2-2h0a2 2 0 012 2"/></svg></div>
+                        <div class="icon"><svg width="28" height="28" fill="none" stroke="#666" viewBox="0 0 24 24"
+                                stroke-width="1.5">
+                                <rect x="3" y="4" width="18" height="16" rx="2" />
+                                <circle cx="9" cy="11" r="2" />
+                                <path stroke-linecap="round" d="M13 10h4M13 13h3M7 16c0-1.1.9-2 2-2h0a2 2 0 012 2" />
+                            </svg></div>
                         <div class="text">แตะเพื่ออัพโหลดสำเนาบัตรประชาชน</div>
                         <img class="preview" id="idcard-preview">
                         <input type="file" name="id_card_image" id="id_card_image" accept="image/*"
@@ -502,7 +647,11 @@
 
                 <!-- PDPA -->
                 <div class="pdpa-section">
-                    <h4><svg style="display:inline;vertical-align:middle;margin-right:4px;" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>ข้อตกลงการคุ้มครองข้อมูลส่วนบุคคล (PDPA)</h4>
+                    <h4><svg style="display:inline;vertical-align:middle;margin-right:4px;" width="16" height="16"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>ข้อตกลงการคุ้มครองข้อมูลส่วนบุคคล (PDPA)</h4>
                     <p>ข้าพเจ้ายินยอมให้จัดเก็บ ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า
                         เพื่อวัตถุประสงค์ในการสมัครงานและการนัดหมายสัมภาษณ์
                         ข้อมูลจะถูกเก็บรักษาอย่างปลอดภัยและไม่ถูกเผยแพร่ต่อบุคคลที่สามโดยไม่ได้รับอนุญาต</p>
@@ -521,7 +670,11 @@
 
         <!-- Success Screen -->
         <div id="success-screen" class="success-screen">
-            <div class="icon"><svg width="48" height="48" fill="none" stroke="#2E7D32" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+            <div class="icon"><svg width="48" height="48" fill="none" stroke="#2E7D32" viewBox="0 0 24 24"
+                    stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg></div>
             <h2>สมัครงานสำเร็จ!</h2>
             <p>ข้อมูลของคุณถูกส่งเรียบร้อยแล้ว<br>ทาง HR จะติดต่อกลับทาง LINE นะครับ</p>
             <button class="close-btn" onclick="closeLiff()">กลับ LINE</button>
@@ -666,6 +819,90 @@
                 window.location.href = 'https://line.me/R/';
             }
         }
+
+        // Setup review position filter
+        const reviewFilter = document.getElementById('review-position-filter');
+        if (reviewFilter) {
+            reviewFilter.addEventListener('change', function() {
+                const selected = this.value;
+                const cards = document.querySelectorAll('#reviews-container .review-card');
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    const pos = card.getAttribute('data-position');
+                    if (selected === 'all' || pos === selected) {
+                        card.style.display = '';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Show/hide "no reviews" message
+                let noMsg = document.getElementById('no-filtered-reviews');
+                if (visibleCount === 0) {
+                    if (!noMsg) {
+                        noMsg = document.createElement('div');
+                        noMsg.id = 'no-filtered-reviews';
+                        noMsg.className = 'no-reviews';
+                        noMsg.textContent = 'ไม่มีรีวิวสำหรับตำแหน่งนี้';
+                        document.getElementById('reviews-container').appendChild(noMsg);
+                    }
+                    noMsg.style.display = '';
+                } else if (noMsg) {
+                    noMsg.style.display = 'none';
+                }
+            });
+        }
+
+        // Setup job details dynamic display
+        const positionsData = @json($positions);
+
+        document.getElementById('position').addEventListener('change', function () {
+            const selectedName = this.value;
+            const detailsBox = document.getElementById('job-details-box');
+            const detailsContent = document.getElementById('job-details-content');
+
+            if (!selectedName) {
+                detailsBox.style.display = 'none';
+                return;
+            }
+
+            const pos = positionsData.find(p => p.name === selectedName);
+            if (pos) {
+                let html = '';
+
+                if (pos.shop_name || pos.location) {
+                    html += `<div style="margin-bottom: 8px;">`;
+                    if (pos.shop_name) html += `<div style="margin-bottom: 2px;"><strong>ร้าน/สาขา:</strong> ${pos.shop_name}</div>`;
+                    if (pos.location) html += `<div style="margin-bottom: 2px;"><strong>ที่ตั้ง:</strong> ${pos.location}</div>`;
+                    html += `</div>`;
+                }
+
+                if (pos.salary || pos.extra_pay || pos.working_hours || pos.days_off) {
+                    html += `<div style="padding: 10px; background: rgba(255,255,255,0.6); border-radius: 8px; margin-bottom: 8px;">`;
+                    if (pos.salary) html += `<div style="margin-bottom: 2px;"><strong>รายได้/เงินเดือน:</strong> <span style="color:#1B5E20;font-weight:600;">${pos.salary}</span></div>`;
+                    if (pos.extra_pay) html += `<div style="margin-bottom: 2px;"><strong>เงินพิเศษ:</strong> <span style="color:#f59e0b;font-weight:600;">${pos.extra_pay}</span></div>`;
+                    if (pos.working_hours) html += `<div style="margin-bottom: 2px;"><strong>เวลาทำงาน:</strong> ${pos.working_hours}</div>`;
+                    if (pos.days_off) html += `<div><strong>วันหยุด:</strong> ${pos.days_off}</div>`;
+                    html += `</div>`;
+                }
+
+                if (pos.duties) html += `<div style="margin-top:8px;"><strong>หน้าที่รับผิดชอบ:</strong><br>${pos.duties.replace(/\n/g, '<br>')}</div>`;
+                if (pos.description) html += `<div style="margin-top:8px;"><strong>รายละเอียดงาน:</strong><br>${pos.description.replace(/\n/g, '<br>')}</div>`;
+                if (pos.benefits) html += `<div style="margin-top:8px;"><strong>สวัสดิการอื่นๆ:</strong><br>${pos.benefits.replace(/\n/g, '<br>')}</div>`;
+                if (pos.qualifications) html += `<div style="margin-top:8px;"><strong>คุณสมบัติผู้สมัคร:</strong><br>${pos.qualifications.replace(/\n/g, '<br>')}</div>`;
+
+                if (html) {
+                    detailsContent.innerHTML = html;
+                    detailsBox.style.display = 'block';
+                } else {
+                    detailsBox.style.display = 'none';
+                }
+            } else {
+                detailsBox.style.display = 'none';
+            }
+        });
 
         // Start
         initLiff();

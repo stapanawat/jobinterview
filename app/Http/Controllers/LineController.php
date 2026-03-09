@@ -11,6 +11,9 @@ use LINE\Clients\MessagingApi\Api\MessagingApiApi;
 use LINE\Clients\MessagingApi\Configuration;
 use LINE\Clients\MessagingApi\Model\ReplyMessageRequest;
 use LINE\Clients\MessagingApi\Model\TextMessage;
+use LINE\Clients\MessagingApi\Model\QuickReply;
+use LINE\Clients\MessagingApi\Model\QuickReplyItem;
+use LINE\Clients\MessagingApi\Model\MessageAction;
 use LINE\Constants\HTTPHeader;
 use GuzzleHttp\Client;
 
@@ -121,24 +124,40 @@ class LineController extends Controller
         }
 
         // --- View Reviews ---
-        if ($text === 'ดูรีวิว') {
-            // Get all reviews for the shop (from any employee)
-            $allEmployeeReviews = Review::where('reviewer_type', 'employee')->get();
-            $recentReviews = Review::where('reviewer_type', 'employee')
-                ->orderBy('created_at', 'desc')
-                ->limit(5)
-                ->get();
+        if ($text === 'ดูรีวิว' || str_starts_with($text, 'ดูรีวิว ')) {
+            $positionFilter = null;
+            if (str_starts_with($text, 'ดูรีวิว ') && $text !== 'ดูรีวิว') {
+                $positionFilter = trim(mb_substr($text, mb_strlen('ดูรีวิว ')));
+            }
 
-            if ($allEmployeeReviews->isEmpty()) {
-                $this->replyText($replyToken, "📋 ยังไม่มีรีวิวร้านค้าในขณะนี้ครับ");
+            // Build query
+            $query = Review::where('reviewer_type', 'employee');
+            if ($positionFilter) {
+                $query->whereHas('applicant', function ($q) use ($positionFilter) {
+                    $q->where('position', $positionFilter);
+                });
+            }
+
+            $allFiltered = $query->get();
+            $recentReviews = (clone $query)->orderBy('created_at', 'desc')->limit(5)->get();
+
+            if ($allFiltered->isEmpty()) {
+                $noMsg = $positionFilter
+                    ? "📋 ยังไม่มีรีวิวสำหรับตำแหน่ง \"{$positionFilter}\" ครับ"
+                    : "📋 ยังไม่มีรีวิวร้านค้าในขณะนี้ครับ";
+                $this->replyText($replyToken, $noMsg);
                 return;
             }
 
-            $avgRating = round($allEmployeeReviews->avg('rating'), 1);
-            $totalCount = $allEmployeeReviews->count();
+            $avgRating = round($allFiltered->avg('rating'), 1);
+            $totalCount = $allFiltered->count();
             $stars = str_repeat('⭐', floor($avgRating));
 
-            $msg = "📋 รีวิวร้านค้าจากพนักงานทั้งหมด\n";
+            $title = $positionFilter
+                ? "📋 รีวิวจากตำแหน่ง: {$positionFilter}"
+                : "📋 รีวิวร้านค้าจากพนักงานทั้งหมด";
+
+            $msg = "{$title}\n";
             $msg .= "คะแนนเฉลี่ย: {$avgRating} / 5 {$stars} ({$totalCount} รีวิว)\n";
             $msg .= "------------------------\n";
 
@@ -147,14 +166,41 @@ class LineController extends Controller
                 $date = $review->created_at->format('d/m/Y');
                 $comment = $review->comment ?: '-';
                 $name = $review->applicant ? substr($review->applicant->name, 0, 1) . '***' : 'ผู้สมัครงาน';
-                $msg .= "\n" . ($i + 1) . ". {$name}\n   {$rStars}\n   \"{$comment}\"\n   📅 {$date}\n";
+                $pos = $review->applicant ? $review->applicant->position : '-';
+                $msg .= "\n" . ($i + 1) . ". {$name} ({$pos})\n   {$rStars}\n   \"{$comment}\"\n   📅 {$date}\n";
             }
 
             if ($totalCount > 5) {
                 $msg .= "\n(แสดง 5 รายการล่าสุดจากทั้งหมด {$totalCount} รายการ)";
             }
 
-            $this->replyText($replyToken, $msg);
+            // Build Quick Reply buttons for positions
+            $positions = \App\Models\Position::where('is_active', true)->pluck('name')->toArray();
+            $quickReplyItems = [];
+
+            // "ทั้งหมด" button
+            $quickReplyItems[] = new QuickReplyItem([
+                'type' => 'action',
+                'action' => new MessageAction([
+                    'type' => 'message',
+                    'label' => 'ทั้งหมด',
+                    'text' => 'ดูรีวิว',
+                ]),
+            ]);
+
+            foreach (array_slice($positions, 0, 12) as $posName) {
+                $label = mb_strlen($posName) > 20 ? mb_substr($posName, 0, 17) . '...' : $posName;
+                $quickReplyItems[] = new QuickReplyItem([
+                    'type' => 'action',
+                    'action' => new MessageAction([
+                        'type' => 'message',
+                        'label' => $label,
+                        'text' => "ดูรีวิว {$posName}",
+                    ]),
+                ]);
+            }
+
+            $this->replyWithQuickReply($replyToken, $msg, $quickReplyItems);
             return;
         }
 
@@ -253,6 +299,26 @@ class LineController extends Controller
     private function replyText($replyToken, $text)
     {
         $message = new TextMessage(['type' => 'text', 'text' => $text]);
+        $request = new ReplyMessageRequest([
+            'replyToken' => $replyToken,
+            'messages' => [$message],
+        ]);
+
+        try {
+            $this->messagingApi->replyMessage($request);
+        } catch (\Exception $e) {
+            Log::error('LINE Reply Error: ' . $e->getMessage());
+        }
+    }
+
+    private function replyWithQuickReply($replyToken, $text, array $quickReplyItems)
+    {
+        $quickReply = new QuickReply(['items' => $quickReplyItems]);
+        $message = new TextMessage([
+            'type' => 'text',
+            'text' => $text,
+            'quickReply' => $quickReply,
+        ]);
         $request = new ReplyMessageRequest([
             'replyToken' => $replyToken,
             'messages' => [$message],

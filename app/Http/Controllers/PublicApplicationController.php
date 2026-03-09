@@ -19,15 +19,18 @@ class PublicApplicationController extends Controller
     public function showForm()
     {
         $liffId = env('LIFF_ID');
-        $reviews = \App\Models\Review::where('reviewer_type', 'employee')
+        $reviews = \App\Models\Review::with('applicant')
+            ->where('reviewer_type', 'employee')
             ->orderBy('created_at', 'desc')
-            ->limit(5)
+            ->limit(20)
             ->get();
 
         $avgRating = \App\Models\Review::where('reviewer_type', 'employee')->avg('rating');
         $totalReviews = \App\Models\Review::where('reviewer_type', 'employee')->count();
 
-        return view('public.apply', compact('liffId', 'reviews', 'avgRating', 'totalReviews'));
+        $positions = \App\Models\Position::where('is_active', true)->get();
+
+        return view('public.apply', compact('liffId', 'reviews', 'avgRating', 'totalReviews', 'positions'));
     }
 
     /**
@@ -45,6 +48,17 @@ class PublicApplicationController extends Controller
             'id_card_image' => 'nullable|image|max:5120',
             'photo' => 'nullable|image|max:5120',
             'pdpa_accepted' => 'required|accepted',
+            // New fields validation
+            'current_residence' => 'nullable|string|max:255',
+            'current_occupation' => 'nullable|string|max:255',
+            'age' => 'nullable|integer|min:18|max:100',
+            'education_level' => 'nullable|string|max:255',
+            'number_of_children' => 'nullable|integer|min:0|max:20',
+            'can_drive_motorcycle' => 'nullable|string|max:100',
+            'pros_and_cons' => 'nullable|string|max:2000',
+            'life_dream' => 'nullable|string|max:2000',
+            'emergency_contact' => 'nullable|string|max:500',
+            'preferred_working_hours' => 'nullable|string|max:500',
         ], [
             'name.required' => 'กรุณากรอกชื่อ-นามสกุล',
             'phone.required' => 'กรุณากรอกเบอร์โทรศัพท์',
@@ -59,33 +73,54 @@ class PublicApplicationController extends Controller
         $idCardPath = null;
         $photoPath = null;
 
-        if ($request->hasFile('id_card_image')) {
-            $idCardPath = $request->file('id_card_image')->store('id-cards', 'public');
+        try {
+            if ($request->hasFile('id_card_image')) {
+                $idCardPath = $request->file('id_card_image')->store('id-cards', 'public');
+            }
+
+            if ($request->hasFile('photo')) {
+                $photoPath = $request->file('photo')->store('photos', 'public');
+            }
+        } catch (\Exception $e) {
+            Log::warning('File upload failed: ' . $e->getMessage());
         }
 
-        if ($request->hasFile('photo')) {
-            $photoPath = $request->file('photo')->store('photos', 'public');
+        // Build update data (only include image fields if new file was uploaded)
+        $updateData = [
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'position' => $request->position,
+            'address' => $request->address,
+            'experience' => $request->experience,
+            'line_display_name' => $request->line_display_name,
+            'line_picture_url' => $request->line_picture_url,
+            'pdpa_accepted' => true,
+            'status' => 'pending_review',
+            'current_residence' => $request->current_residence,
+            'current_occupation' => $request->current_occupation,
+            'age' => $request->age,
+            'education_level' => $request->education_level,
+            'number_of_children' => $request->number_of_children,
+            'can_drive_motorcycle' => $request->can_drive_motorcycle,
+            'pros_and_cons' => $request->pros_and_cons,
+            'life_dream' => $request->life_dream,
+            'emergency_contact' => $request->emergency_contact,
+            'preferred_working_hours' => $request->preferred_working_hours,
+        ];
+
+        // Only update image paths if new files were uploaded
+        if ($idCardPath) {
+            $updateData['id_card_image'] = $idCardPath;
+        }
+        if ($photoPath) {
+            $updateData['photo'] = $photoPath;
         }
 
         // Create or update applicant
         $applicant = Applicant::updateOrCreate(
             ['line_user_id' => $request->line_user_id],
-            [
-                'name' => $request->name,
-                'phone' => $request->phone,
-                'position' => $request->position,
-                'address' => $request->address,
-                'experience' => $request->experience,
-                'id_card_image' => $idCardPath,
-                'photo' => $photoPath,
-                'line_display_name' => $request->line_display_name,
-                'line_picture_url' => $request->line_picture_url,
-                'pdpa_accepted' => true,
-                'status' => 'pending_review',
-            ]
+            $updateData
         );
-
-
 
         return response()->json(['success' => true, 'message' => 'สมัครงานสำเร็จ!']);
     }

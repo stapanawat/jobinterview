@@ -45,6 +45,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reviews', [App\Http\Controllers\ReviewController::class, 'index'])->name('reviews.index');
     Route::get('/reviews/create', [App\Http\Controllers\ReviewController::class, 'create'])->name('reviews.create');
     Route::post('/reviews', [App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
+
+    Route::post('/positions', [App\Http\Controllers\PositionController::class, 'store'])->name('positions.store');
+    Route::put('/positions/{position}', [App\Http\Controllers\PositionController::class, 'update'])->name('positions.update');
+    Route::delete('/positions/{position}', [App\Http\Controllers\PositionController::class, 'destroy'])->name('positions.destroy');
+
+    Route::patch('/applicants/{applicant}/status', [DashboardController::class, 'updateStatus'])->name('applicants.updateStatus');
 });
 
 Route::middleware('auth')->group(function () {

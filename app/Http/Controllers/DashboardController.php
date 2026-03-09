@@ -4,16 +4,40 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Applicant;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $applicants = Applicant::with('interviews')->orderBy('created_at', 'desc')->get();
+        $query = Applicant::with('interviews')->orderBy('updated_at', 'desc');
 
-        $stats = $this->getStats($applicants);
+        $dateFilter = $request->input('date_filter');
+        if ($dateFilter) {
+            $now = Carbon::now();
 
-        return view('dashboard', compact('applicants', 'stats'));
+            if ($dateFilter === 'today') {
+                $query->whereDate('updated_at', $now->toDateString());
+            } elseif ($dateFilter === 'yesterday') {
+                $query->whereDate('updated_at', $now->subDay()->toDateString());
+            } elseif ($dateFilter === 'this_week') {
+                $query->whereBetween('updated_at', [$now->startOfWeek()->toDateTimeString(), $now->endOfWeek()->toDateTimeString()]);
+            } elseif ($dateFilter === 'this_month') {
+                $query->whereMonth('updated_at', $now->month)
+                    ->whereYear('updated_at', $now->year);
+            }
+        }
+
+        $allApplicants = $query->get();
+        $positions = \App\Models\Position::all();
+
+        $stats = $this->getStats($allApplicants);
+
+        // Split into interview process vs employees
+        $applicants = $allApplicants->whereNotIn('status', ['working', 'terminated']);
+        $employees = $allApplicants->whereIn('status', ['working', 'terminated']);
+
+        return view('dashboard', compact('applicants', 'employees', 'stats', 'positions', 'dateFilter'));
     }
 
     public function updates()
@@ -27,6 +51,28 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function updateStatus(Request $request, Applicant $applicant)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending_review,scheduled,time_confirmed,attendance_confirmed,working,terminated,cancelled',
+            'job_description' => 'nullable|string|max:1000',
+        ]);
+
+        $applicant->status = $validated['status'];
+
+        if ($validated['status'] === 'working') {
+            $applicant->job_description = $validated['job_description'] ?? $applicant->job_description;
+        }
+
+        $applicant->save();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'อัปเดตสถานะเรียบร้อยแล้ว']);
+        }
+
+        return redirect()->route('dashboard')->with('success', 'อัปเดตสถานะเรียบร้อยแล้ว');
+    }
+
     private function getStats($applicants)
     {
         return [
@@ -35,6 +81,11 @@ class DashboardController extends Controller
             'scheduled' => $applicants->where('status', 'scheduled')->count(),
             'time_confirmed' => $applicants->where('status', 'time_confirmed')->count(),
             'attendance_confirmed' => $applicants->where('status', 'attendance_confirmed')->count(),
+            'working' => $applicants->where('status', 'working')->count(),
+            'terminated' => $applicants->where('status', 'terminated')->count(),
+            'active_positions' => \App\Models\Position::where('is_active', true)->count(),
+            'total_reviews' => \App\Models\Review::count(),
         ];
     }
 }
+
