@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Applicant;
 use Carbon\Carbon;
+use App\Exports\EmployeesExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
@@ -86,6 +88,11 @@ class DashboardController extends Controller
             'active_positions' => \App\Models\Position::where('is_active', true)->count(),
             'total_reviews' => \App\Models\Review::count(),
         ];
+    }
+
+    public function exportEmployees()
+    {
+        return Excel::download(new EmployeesExport, 'employees_' . date('Ymd') . '.xlsx');
     }
 }
 

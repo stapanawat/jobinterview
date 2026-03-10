@@ -3,6 +3,15 @@
         <div>
             <h1 class="page-title">ประวัติรีวิวทั้งหมด</h1>
             <p class="page-subtitle">รีวิวจากร้านค้าและพนักงาน — แบ่งตามตำแหน่ง</p>
+            @if(isset($applicant))
+                <div class="mt-3 inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-xl text-sm font-medium">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    กำลังดูรีวิวของพนักงาน: {{ $applicant->name ?: '-' }}
+                    <a href="{{ route('reviews.index') }}" class="ml-2 text-blue-400 hover:text-blue-600 bg-white p-1 rounded-lg shadow-sm border border-blue-100" title="ดูรีวิวทั้งหมด">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </a>
+                </div>
+            @endif
         </div>
     </x-slot>
 
@@ -23,6 +32,9 @@
     <div class="card mb-6">
         <div class="card-body">
             <form method="GET" action="{{ route('reviews.index') }}" class="flex flex-wrap items-end gap-4">
+                @if(request('applicant_id'))
+                    <input type="hidden" name="applicant_id" value="{{ request('applicant_id') }}">
+                @endif
                 <div class="flex-1 min-w-[180px]">
                     <label class="form-label">ตำแหน่ง</label>
                     <select name="position" class="form-select w-full">
@@ -74,7 +86,7 @@
                         </svg>
                         กรอง
                     </button>
-                    <a href="{{ route('reviews.index') }}" class="btn btn-secondary">ล้าง</a>
+                    <a href="{{ route('reviews.index', request()->has('applicant_id') ? ['applicant_id' => request('applicant_id')] : []) }}" class="btn btn-secondary">ล้าง</a>
                 </div>
             </form>
         </div>

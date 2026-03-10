@@ -12,7 +12,16 @@ class ReviewController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Review::with('applicant')->orderBy('created_at', 'desc');
+        // Only fetch reviews for applicants who are actual employees (working or terminated)
+        $query = Review::whereHas('applicant', function ($q) {
+            $q->whereIn('status', ['working', 'terminated']);
+        })->with('applicant')->orderBy('created_at', 'desc');
+
+        $applicant = null;
+        if ($request->filled('applicant_id')) {
+            $query->where('applicant_id', $request->applicant_id);
+            $applicant = Applicant::find($request->applicant_id);
+        }
 
         if ($request->filled('reviewer_type')) {
             $query->where('reviewer_type', $request->reviewer_type);
@@ -54,7 +63,7 @@ class ReviewController extends Controller
             return $review->applicant?->position ?? 'ไม่ระบุตำแหน่ง';
         });
 
-        return view('reviews.index', compact('reviews', 'positions', 'groupedReviews'));
+        return view('reviews.index', compact('reviews', 'positions', 'groupedReviews', 'applicant'));
     }
 
     public function create(Request $request)

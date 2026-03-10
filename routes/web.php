@@ -38,6 +38,7 @@ Route::post('/apply', [PublicApplicationController::class, 'submitForm'])->name(
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/updates', [DashboardController::class, 'updates'])->name('dashboard.updates');
+    Route::get('/employees/export', [DashboardController::class, 'exportEmployees'])->name('employees.export');
     Route::get('/interviews/create', [App\Http\Controllers\InterviewController::class, 'create'])->name('interviews.create');
     Route::post('/interviews', [App\Http\Controllers\InterviewController::class, 'store'])->name('interviews.store');
     Route::post('/interviews/{applicant}/cancel', [App\Http\Controllers\InterviewController::class, 'cancel'])->name('interviews.cancel');
