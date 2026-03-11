@@ -82,6 +82,7 @@ class InterviewController extends Controller
                     new FlexText(['type' => 'text', 'text' => "📅 วันที่: {$dateFormatted}", 'margin' => 'sm']),
                     new FlexText(['type' => 'text', 'text' => "⏰ เวลา: {$interview->interview_time}", 'margin' => 'sm']),
                     new FlexText(['type' => 'text', 'text' => "📍 สถานที่: {$interview->location}", 'margin' => 'sm', 'wrap' => true]),
+                    new FlexText(['type' => 'text', 'text' => "📌 รบกวนกดยืนยันการเข้าร่วมก่อนเวลานัดหมาย 3 ชม.", 'margin' => 'md', 'size' => 'sm', 'color' => '#e83e8c', 'weight' => 'bold', 'wrap' => true]),
                 ],
             ]),
             'footer' => new FlexBox([
