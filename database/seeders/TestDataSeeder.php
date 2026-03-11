@@ -23,7 +23,7 @@ class TestDataSeeder extends Seeder
             'experience' => 'เสิร์ฟร้านอาหาร 2 ปี',
         ]);
 
-        // 2 — นัดสัมภาษณ์แล้ว
+        // 2 — นัดหมายแล้ว
         $a2 = Applicant::create([
             'line_user_id' => 'test_user_02',
             'name' => 'สมหญิง รักงาน',

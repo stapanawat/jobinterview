@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>PKS Recruit — เข้าสู่ระบบ | Petkaset.co</title>
+    <title>PKB — เข้าสู่ระบบ | Interview & Job Appointment Management</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo.jpg') }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -318,20 +319,16 @@
             <!-- Left: Branding -->
             <div class="login-brand">
                 <div>
-                    <div class="brand-icon-circle">
-                        <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                            stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
+                    <div class="brand-icon-circle" style="overflow: hidden; padding: 0; border: none; background: white;">
+                        <img src="{{ asset('images/logo.jpg') }}" alt="Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                     </div>
-                    <h1 class="brand-title">PKS Recruit</h1>
-                    <p class="brand-sub">Petkaset.co</p>
+                    <h1 class="brand-title">PKB</h1>
+                    <p class="brand-sub">Interview & Job Appointment Management</p>
                     <div class="brand-divider"></div>
                     <p class="brand-desc">
-                        ระบบสมัครงานและนัดสัมภาษณ์<br>
+                        ระบบสมัครงานและนัดหมาย<br>
                         สำหรับบริหารจัดการผู้สมัครงาน<br>
-                        และนัดหมายสัมภาษณ์อย่างครบวงจร
+                        และนัดหมายอย่างครบวงจร
                     </p>
                     <div class="brand-features-list"
                         style="display:flex;flex-direction:column;gap:10px;margin-top:24px;">
@@ -349,7 +346,7 @@
                                 <line x1="16" y1="2" x2="16" y2="6" />
                                 <line x1="8" y1="2" x2="8" y2="6" />
                                 <line x1="3" y1="10" x2="21" y2="10" />
-                            </svg> <span>นัดหมายสัมภาษณ์</span>
+                            </svg> <span>นัดหมาย</span>
                         </div>
                         <div class="brand-feature">
                             <svg width="16" height="16" fill="none" stroke="#A5D6A7" viewBox="0 0 24 24"
@@ -361,7 +358,7 @@
                         </div>
                     </div>
                 </div>
-                <p class="brand-footer">© 2026 Petkaset.co — All rights reserved</p>
+                <p class="brand-footer">© 2026 PKB — All rights reserved</p>
             </div>
 
             <!-- Right: Login Form -->

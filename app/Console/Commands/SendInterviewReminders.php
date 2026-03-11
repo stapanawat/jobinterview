@@ -61,7 +61,7 @@ class SendInterviewReminders extends Command
                     'type' => 'box',
                     'layout' => 'vertical',
                     'contents' => [
-                        new \LINE\Clients\MessagingApi\Model\FlexText(['type' => 'text', 'text' => '🔔 เตือน: พรุ่งนี้มีสัมภาษณ์', 'weight' => 'bold', 'size' => 'lg', 'color' => '#007bff']),
+                        new \LINE\Clients\MessagingApi\Model\FlexText(['type' => 'text', 'text' => '🔔 เตือน: พรุ่งนี้มีนัด', 'weight' => 'bold', 'size' => 'lg', 'color' => '#007bff']),
                         new \LINE\Clients\MessagingApi\Model\FlexText(['type' => 'text', 'text' => "ถึงคุณ {$applicant->name}", 'margin' => 'md']),
                         new \LINE\Clients\MessagingApi\Model\FlexText(['type' => 'text', 'text' => "📅 วันที่: {$dateFormatted}", 'margin' => 'sm']),
                         new \LINE\Clients\MessagingApi\Model\FlexText(['type' => 'text', 'text' => "⏰ เวลา: {$interview->interview_time}", 'margin' => 'sm']),
@@ -73,7 +73,7 @@ class SendInterviewReminders extends Command
 
             $message = new \LINE\Clients\MessagingApi\Model\FlexMessage([
                 'type' => 'flex',
-                'altText' => 'แจ้งเตือนการนัดสัมภาษณ์งานพรุ่งนี้ครับ',
+                'altText' => 'แจ้งเตือนการนัดหมายงานพรุ่งนี้ครับ',
                 'contents' => $flexBubble,
             ]);
 

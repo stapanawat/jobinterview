@@ -38,10 +38,13 @@ class LineController extends Controller
     {
         $signature = $request->header(HTTPHeader::LINE_SIGNATURE);
         if (empty($signature)) {
+            Log::warning('LINE Webhook: Invalid or missing Signature.');
             return response('Bad Request', 400);
         }
 
         $events = $request->input('events', []);
+        Log::info('LINE Webhook Payload: ', $events);
+
 
         foreach ($events as $event) {
             if ($event['type'] === 'message' && $event['message']['type'] === 'text') {
@@ -65,13 +68,17 @@ class LineController extends Controller
 
     private function handlePostback($replyToken, $data)
     {
+        Log::info('LINE Postback Data before parsing: ' . $data);
         parse_str($data, $params);
+        Log::info('LINE Postback Parsed Params: ', $params);
+
         $action = $params['action'] ?? null;
         $interviewId = $params['interview_id'] ?? null;
 
         if ($action && $interviewId) {
             $interview = \App\Models\Interview::find($interviewId);
             if ($interview) {
+                Log::info("Found Interview: {$interviewId}, Action: {$action}");
                 // Prevent duplicate clicks
                 $finalStatuses = ['time_confirmed', 'attendance_confirmed', 'reschedule_requested', 'cancelled'];
                 if (in_array($action, ['confirm', 'reschedule', 'cancel']) && in_array($interview->status, $finalStatuses)) {
@@ -82,7 +89,7 @@ class LineController extends Controller
                 if ($action === 'confirm') {
                     $interview->update(['status' => 'time_confirmed']);
                     $interview->applicant->update(['status' => 'time_confirmed']);
-                    $this->replyText($replyToken, "ขอบคุณครับ ยืนยันเวลานัดสัมภาษณ์เรียบร้อยแล้ว แล้วพบกันครับ!");
+                    $this->replyText($replyToken, "ขอบคุณครับ ยืนยันเวลานัดหมายเรียบร้อยแล้ว แล้วพบกันครับ!");
                 } elseif ($action === 'reschedule') {
                     $interview->update(['status' => 'reschedule_requested']);
                     $interview->applicant->update(['status' => 'pending_review']);
@@ -90,7 +97,7 @@ class LineController extends Controller
                 } elseif ($action === 'cancel') {
                     $interview->update(['status' => 'cancelled']);
                     $interview->applicant->update(['status' => 'cancelled']);
-                    $this->replyText($replyToken, "รับทราบครับ ได้ยกเลิกการนัดสัมภาษณ์เรียบร้อยแล้ว\nหากเปลี่ยนใจสามารถติดต่อ HR หรือพิมพ์ 'สมัครงาน' เพื่อเริ่มต้นใหม่ได้ครับ");
+                    $this->replyText($replyToken, "รับทราบครับ ได้ยกเลิกการนัดหมายเรียบร้อยแล้ว\nหากเปลี่ยนใจสามารถติดต่อ HR หรือพิมพ์ 'สมัครงาน' เพื่อเริ่มต้นใหม่ได้ครับ");
                 } elseif ($action === 'day_confirm') {
                     if ($interview->day_before_confirmed || $interview->status === 'attendance_confirmed') {
                         $this->replyText($replyToken, "คุณได้ยืนยันแล้วครับ ขอบคุณครับ! 🙏");
@@ -265,7 +272,7 @@ class LineController extends Controller
         if ($text === 'ยืนยันการส่งใบสมัคร') {
             if ($applicant && !empty($applicant->name)) {
                 $time = $applicant->updated_at->timezone('Asia/Bangkok')->format('n/j/Y H:i:s');
-                $replyText = "มีผู้สมัครใหม่!\n\nชื่อ: {$applicant->name}\nเบอร์: {$applicant->phone}\nตำแหน่ง: {$applicant->position}\nเวลา: {$time}\n\n\"🎉 สมัครงานสำเร็จครับ! ทางเราได้รับข้อมูลของคุณ {$applicant->name} สมัครตำแหน่ง {$applicant->position} เรียบร้อยแล้ว โปรดรอการติดต่อกลับจากทีม HR เพื่อร่วมนัดหมายสัมภาษณ์ในขั้นตอนต่อไปครับ หากต้องการสอบถามเพิ่มเติม สามารถพิมพ์ข้อความทิ้งไว้ได้เลยครับ\"";
+                $replyText = "มีผู้สมัครใหม่!\n\nชื่อ: {$applicant->name}\nเบอร์: {$applicant->phone}\nตำแหน่ง: {$applicant->position}\nเวลา: {$time}\n\n\"🎉 สมัครงานสำเร็จครับ! ทางเราได้รับข้อมูลของคุณ {$applicant->name} สมัครตำแหน่ง {$applicant->position} เรียบร้อยแล้ว โปรดรอการติดต่อกลับจากทีม HR เพื่อร่วมนัดหมายในขั้นตอนต่อไปครับ หากต้องการสอบถามเพิ่มเติม สามารถพิมพ์ข้อความทิ้งไว้ได้เลยครับ\"";
                 $this->replyText($replyToken, $replyText);
             }
             return;
@@ -288,7 +295,7 @@ class LineController extends Controller
             "2️⃣ พิมพ์ 'ดูรีวิว' — ดูรีวิวร้านค้าจากพนักงานคนอื่นๆ\n" .
             "3️⃣ พิมพ์ 'รีวิวร้านค้า' — แบ่งปันประสบการณ์การทำงาน\n" .
             "4️⃣ พิมพ์ 'วิธีใช้งาน' — เรียกดูคำแนะนำนี้ได้ทุกเมื่อ\n\n" .
-            "📍 เมื่อมีการนัดสัมภาษณ์ ระบบจะส่งข้อความหาคุณเพื่อให้กดยืนยันหรือขอเลื่อนได้ทันที\n" .
+            "📍 เมื่อมีการนัดหมาย ระบบจะส่งข้อความหาคุณเพื่อให้กดยืนยันหรือขอเลื่อนได้ทันที\n" .
             "📍 ล่วงหน้า 1 วัน ระบบจะถามยืนยันว่ามาแน่นอนหรือไม่\n\n" .
             "🔗 สมัครงานเลย: {$liffUrl}\n\n" .
             "ขอให้โชคดีกับการหางานนะครับ! 🙏";

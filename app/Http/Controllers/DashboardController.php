@@ -75,6 +75,22 @@ class DashboardController extends Controller
         return redirect()->route('dashboard')->with('success', 'อัปเดตสถานะเรียบร้อยแล้ว');
     }
 
+    public function updateNotes(Request $request, Applicant $applicant)
+    {
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:2000',
+        ]);
+
+        $applicant->notes = $validated['notes'];
+        $applicant->save();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'บันทึกหมายเหตุเรียบร้อยแล้ว']);
+        }
+
+        return back()->with('success', 'บันทึกหมายเหตุเรียบร้อยแล้ว');
+    }
+
     private function getStats($applicants)
     {
         return [

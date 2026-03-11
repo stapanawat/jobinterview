@@ -46,8 +46,8 @@ $flexBubble = new FlexBubble([
         'type' => 'box',
         'layout' => 'vertical',
         'contents' => [
-            new FlexText(['type' => 'text', 'text' => 'นัดหมายสัมภาษณ์งาน', 'weight' => 'bold', 'size' => 'xl']),
-            new FlexText(['type' => 'text', 'text' => "ถึงคุณ {$applicant->name}", 'margin' => 'md']),
+            new FlexText(['type' => 'text', 'text' => 'นัดหมาย', 'weight' => 'bold', 'size' => 'xl']),
+            new FlexText(['type' => 'text', 'text' => "ถึงคุณ ผู้สมัคร", 'margin' => 'md']),
             new FlexText(['type' => 'text', 'text' => "📅 วันที่: {$dateFormatted}", 'margin' => 'sm']),
             new FlexText(['type' => 'text', 'text' => "⏰ เวลา: {$interview->interview_time}", 'margin' => 'sm']),
             new FlexText(['type' => 'text', 'text' => "📍 สถานที่: {$interview->location}", 'margin' => 'sm', 'wrap' => true]),
@@ -84,7 +84,7 @@ $flexBubble = new FlexBubble([
 
 $message = new FlexMessage([
     'type' => 'flex',
-    'altText' => 'นัดหมายสัมภาษณ์งาน',
+    'altText' => 'นัดหมาย',
     'contents' => $flexBubble
 ]);
 

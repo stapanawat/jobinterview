@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <h1 class="page-title">นัดหมายสัมภาษณ์</h1>
-            <p class="page-subtitle">กำหนดเวลาสัมภาษณ์สำหรับ {{ $applicant->name }}</p>
+            <h1 class="page-title">นัดหมาย</h1>
+            <p class="page-subtitle">กำหนดเวลาสำหรับ {{ $applicant->name }}</p>
         </div>
     </x-slot>
 
@@ -23,7 +23,7 @@
                             <span class="badge badge-yellow">รอตรวจสอบ</span>
                             @break
                         @case('scheduled')
-                            <span class="badge badge-blue">นัดสัมภาษณ์แล้ว</span>
+                            <span class="badge badge-blue">นัดหมายแล้ว</span>
                             @break
                         @case('confirmed')
                             <span class="badge badge-green">ยืนยันแล้ว</span>
@@ -38,7 +38,7 @@
         {{-- Interview Form --}}
         <div class="card">
             <div class="card-header">
-                <h2 class="text-lg font-semibold text-gray-900">รายละเอียดการสัมภาษณ์</h2>
+                <h2 class="text-lg font-semibold text-gray-900">รายละเอียด</h2>
             </div>
             <div class="card-body">
                 <form action="{{ route('interviews.store') }}" method="POST">
@@ -51,7 +51,7 @@
                             <label for="interview_date" class="form-label">
                                 <span class="flex items-center gap-1.5">
                                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    วันที่สัมภาษณ์
+                                    วันที่นัดหมาย
                                 </span>
                             </label>
                             <input type="date" name="interview_date" id="interview_date" class="form-input" required>

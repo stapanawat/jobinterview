@@ -171,7 +171,7 @@
         <div class="pipeline-group flex-1">
             <div class="pipeline-group-label bg-amber-50 text-amber-700">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                ขั้นตอนสัมภาษณ์
+                ขั้นตอนนัดหมาย
             </div>
             <div class="flex items-center gap-1">
                 {{-- รอตรวจสอบ --}}
@@ -185,7 +185,7 @@
 
                 <div class="pipeline-connector"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
 
-                {{-- นัดสัมภาษณ์แล้ว --}}
+                {{-- นัดหมายแล้ว --}}
                 <div class="pipeline-step bg-blue-50">
                     <div class="pipeline-icon bg-blue-100 text-blue-600">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -397,7 +397,7 @@
                 </div>
                 <div>
                     <h2 class="text-lg font-semibold text-gray-900">ผู้สมัคร / สัมภาษณ์</h2>
-                    <p class="text-sm text-gray-500 mt-0.5">จัดการผู้สมัครที่อยู่ในขั้นตอนสัมภาษณ์</p>
+                    <p class="text-sm text-gray-500 mt-0.5">จัดการผู้สมัครที่อยู่ในขั้นตอน</p>
                 </div>
             </div>
             <span class="text-sm font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-700">{{ $applicants->count() }} คน</span>
@@ -411,7 +411,7 @@
                         <th>เบอร์โทรศัพท์</th>
                         <th>ตำแหน่ง</th>
                         <th>สถานะ</th>
-                        <th>วันนัดสัมภาษณ์</th>
+                        <th>วันนัดหมาย</th>
                         <th class="text-center">ยืนยันล่วงหน้า</th>
                         <th>อัปเดตล่าสุด</th>
                         <th class="text-center">จัดการ</th>
@@ -445,7 +445,7 @@
                                     @endswitch"
                                     style="appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22 fill=%22%236b7280%22%3E%3Cpath fill-rule=%22evenodd%22 d=%22M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z%22 clip-rule=%22evenodd%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.4rem center; background-size: 1em;">
                                     <option value="pending_review" {{ $applicant->status == 'pending_review' ? 'selected' : '' }}>รอตรวจสอบ</option>
-                                    <option value="scheduled" {{ $applicant->status == 'scheduled' ? 'selected' : '' }}>นัดสัมภาษณ์แล้ว</option>
+                                    <option value="scheduled" {{ $applicant->status == 'scheduled' ? 'selected' : '' }}>นัดหมายแล้ว</option>
                                     <option value="time_confirmed" {{ $applicant->status == 'time_confirmed' ? 'selected' : '' }}>ยืนยันเวลานัด</option>
                                     <option value="attendance_confirmed" {{ $applicant->status == 'attendance_confirmed' ? 'selected' : '' }}>ยืนยันเข้าร่วม</option>
                                     <option value="working" {{ $applicant->status == 'working' ? 'selected' : '' }}>✓ ผ่าน → เริ่มทำงาน</option>
@@ -503,15 +503,15 @@
                                     <a href="{{ route('interviews.create', ['applicant' => $applicant->id]) }}"
                                        class="btn btn-primary btn-sm">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        นัดสัมภาษณ์
+                                        นัดหมาย
                                     </a>
 
                                     @if(in_array($applicant->status, ['scheduled', 'time_confirmed', 'attendance_confirmed', 'reschedule_requested']))
-                                        <form action="{{ route('interviews.cancel', ['applicant' => $applicant->id]) }}" method="POST" class="inline w-full mt-1" onsubmit="return confirm('คุณต้องการยกเลิกการนัดสัมภาษณ์ผู้สมัครรายนี้ใช่หรือไม่?');">
+                                        <form action="{{ route('interviews.cancel', ['applicant' => $applicant->id]) }}" method="POST" class="inline w-full mt-1" onsubmit="return confirm('คุณต้องการยกเลิกการนัดหมายผู้สมัครรายนี้ใช่หรือไม่?');">
                                             @csrf
                                             <button type="submit" class="btn btn-sm w-full flex justify-center items-center" style="background-color: #ef4444; color: white;">
                                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                                ยกเลิกนัดสัมภาษณ์
+                                                ยกเลิกนัดหมาย
                                             </button>
                                         </form>
                                     @endif
@@ -524,7 +524,7 @@
                         <tr>
                             <td colspan="8" class="text-center py-12">
                                 <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
-                                <p class="text-gray-400 font-medium">ไม่มีผู้สมัครในขั้นตอนสัมภาษณ์</p>
+                                <p class="text-gray-400 font-medium">ไม่มีผู้สมัครในขั้นตอนนัดหมาย</p>
                                 <p class="text-gray-400 text-xs mt-1">ผู้สมัครจะปรากฏเมื่อมีการสมัครผ่าน LINE</p>
                             </td>
                         </tr>
@@ -663,6 +663,21 @@
                     <div class="col-span-2"><span class="font-medium text-gray-500">ประสบการณ์ทำงาน:</span> <span id="m_experience" class="text-gray-900 block mt-1 whitespace-pre-wrap"></span></div>
                     <div class="col-span-2"><span class="font-medium text-gray-500">อธิบายข้อดี-ข้อเสียของตัวท่านเอง:</span> <span id="m_pros_cons" class="text-gray-900 block mt-1 whitespace-pre-wrap"></span></div>
                     <div class="col-span-2"><span class="font-medium text-gray-500">ความฝันในชีวิต:</span> <span id="m_dream" class="text-gray-900 block mt-1 whitespace-pre-wrap"></span></div>
+                </div>
+                
+                <!-- Notes Section -->
+                <div class="mt-6 pt-6 border-t border-gray-100">
+                    <h4 class="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        บันทึก / หมายเหตุ
+                    </h4>
+                    <input type="hidden" id="m_applicant_id">
+                    <textarea id="m_notes" rows="3" class="w-full border-gray-300 rounded-lg p-3 text-sm focus:ring-brand-500 focus:border-brand-500 transition-colors" placeholder="เพิ่มบันทึกสำหรับผู้สมัครคนนี้..."></textarea>
+                    <div class="flex justify-end mt-3">
+                        <button type="button" onclick="saveApplicantNotes()" class="px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors" style="background: linear-gradient(135deg, #10b981, #059669);" id="saveNotesBtn">
+                            บันทึกหมายเหตุ
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="p-6 border-t bg-gray-50 flex justify-end">
@@ -940,11 +955,54 @@
         document.getElementById('m_pros_cons').textContent = data.pros_and_cons || '-';
         document.getElementById('m_dream').textContent = data.life_dream || '-';
         
+        document.getElementById('m_applicant_id').value = data.id;
+        document.getElementById('m_notes').value = data.notes || '';
+        
         document.getElementById('applicantModal').classList.remove('hidden');
     }
 
     function closeApplicantModal() {
         document.getElementById('applicantModal').classList.add('hidden');
+    }
+
+    async function saveApplicantNotes() {
+        const applicantId = document.getElementById('m_applicant_id').value;
+        const notes = document.getElementById('m_notes').value;
+        const btn = document.getElementById('saveNotesBtn');
+        const originalText = btn.innerHTML;
+        
+        btn.innerHTML = 'กำลังบันทึก...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`/applicants/${applicantId}/notes`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ notes }),
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                // Update local data in page by reloading or just show success
+                showFloatingAlert('บันทึกหมายเหตุเรียบร้อยแล้ว', 'success');
+                // Slight delay then reload to update table data if needed
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showFloatingAlert(result.message || 'เกิดข้อผิดพลาด', 'error');
+            }
+        } catch (err) {
+            console.error('Notes save error:', err);
+            showFloatingAlert('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
     }
 
     // Modal Handle for Positions

@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>สมัครงาน | PKS Recruit — Petkaset.co</title>
+    <title>สมัครงาน | PKB — Interview & Job Appointment Management</title>
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo.jpg') }}">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
@@ -109,16 +110,14 @@
         }
 
         .review-comment {
-            font-size: 13px;
-            color: #555;
-            margin-top: 4px;
-            line-height: 1.5;
+            display: none;
         }
 
         .review-meta {
-            font-size: 11px;
-            color: #999;
-            margin-top: 4px;
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 4px;
         }
 
         .no-reviews {
@@ -409,11 +408,9 @@
         <!-- Application Form -->
         <div id="form-section" style="display: none;">
             <div class="header">
-                <div class="logo"><svg width="28" height="28" fill="none" stroke="white" viewBox="0 0 24 24"
-                        stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg></div>
+                <div class="logo" style="overflow: hidden; padding: 0; background: white; border: 1px solid #eee;">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="Logo" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
                 <h1>สมัครงาน</h1>
                 <p>กรอกข้อมูลเพื่อสมัครงานกับเรา</p>
             </div>
@@ -433,35 +430,35 @@
 
                 <!-- Position Filter -->
                 @if(!$reviews->isEmpty())
-                <div style="margin-bottom: 10px;">
-                    <select id="review-position-filter" style="width: 100%; padding: 8px 12px; border: 2px solid #C8E6C9; border-radius: 10px; font-size: 13px; font-family: 'Noto Sans Thai', sans-serif; background: #fff; color: #333;">
-                        <option value="all">ทุกตำแหน่ง</option>
-                        @foreach($positions as $pos)
-                            <option value="{{ $pos->name }}">{{ $pos->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div style="margin-bottom: 10px;">
+                        <select id="review-position-filter"
+                            style="width: 100%; padding: 8px 12px; border: 2px solid #C8E6C9; border-radius: 10px; font-size: 13px; font-family: 'Noto Sans Thai', sans-serif; background: #fff; color: #333;">
+                            <option value="all">ทุกตำแหน่ง</option>
+                            @foreach($positions as $pos)
+                                <option value="{{ $pos->name }}">{{ $pos->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 @endif
 
                 <div id="reviews-container">
-                @if($reviews->isEmpty())
-                    <div class="no-reviews">ยังไม่มีรีวิวในขณะนี้</div>
-                @else
-                    @foreach($reviews as $review)
-                        <div class="review-card" data-position="{{ $review->applicant?->position ?? '' }}">
-                            <div class="review-stars">@for($i = 0; $i < $review->rating; $i++)<svg
-                                style="display:inline;width:14px;height:14px;color:#f59e0b;" fill="currentColor"
-                                viewBox="0 0 24 24">
-                                <path
-                                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                            </svg>@endfor</div>
-                            <div class="review-comment">"{{ $review->comment ?: 'ไม่มีความคิดเห็น' }}"</div>
-                            <div class="review-meta">
-                                {{ $review->applicant?->position ? $review->applicant->position . ' · ' : '' }}{{ $review->created_at->diffForHumans() }}
+                    @if($reviews->isEmpty())
+                        <div class="no-reviews">ยังไม่มีรีวิวในขณะนี้</div>
+                    @else
+                        @foreach($reviews as $review)
+                            <div class="review-card" data-position="{{ $review->applicant?->position ?? '' }}">
+                                <div class="review-meta">
+                                    {{ $review->applicant?->name ?? 'ผู้รีวิว' }}
+                                </div>
+                                <div class="review-stars">@for($i = 0; $i < $review->rating; $i++)<svg
+                                    style="display:inline;width:14px;height:14px;color:#f59e0b;" fill="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>@endfor</div>
                             </div>
-                        </div>
-                    @endforeach
-                @endif
+                        @endforeach
+                    @endif
                 </div>
             </div>
 
@@ -653,7 +650,7 @@
                                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>ข้อตกลงการคุ้มครองข้อมูลส่วนบุคคล (PDPA)</h4>
                     <p>ข้าพเจ้ายินยอมให้จัดเก็บ ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า
-                        เพื่อวัตถุประสงค์ในการสมัครงานและการนัดหมายสัมภาษณ์
+                        เพื่อวัตถุประสงค์ในการสมัครงานและการนัดหมาย
                         ข้อมูลจะถูกเก็บรักษาอย่างปลอดภัยและไม่ถูกเผยแพร่ต่อบุคคลที่สามโดยไม่ได้รับอนุญาต</p>
                     <div class="pdpa-checkbox">
                         <input type="checkbox" name="pdpa_accepted" id="pdpa_accepted" value="1">
@@ -823,7 +820,7 @@
         // Setup review position filter
         const reviewFilter = document.getElementById('review-position-filter');
         if (reviewFilter) {
-            reviewFilter.addEventListener('change', function() {
+            reviewFilter.addEventListener('change', function () {
                 const selected = this.value;
                 const cards = document.querySelectorAll('#reviews-container .review-card');
                 let visibleCount = 0;

@@ -52,6 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/positions/{position}', [App\Http\Controllers\PositionController::class, 'destroy'])->name('positions.destroy');
 
     Route::patch('/applicants/{applicant}/status', [DashboardController::class, 'updateStatus'])->name('applicants.updateStatus');
+    Route::patch('/applicants/{applicant}/notes', [DashboardController::class, 'updateNotes'])->name('applicants.updateNotes');
 });
 
 Route::middleware('auth')->group(function () {

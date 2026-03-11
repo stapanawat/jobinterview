@@ -78,7 +78,7 @@ class SendImmediateInterviewReminders extends Command
 
             $message = new \LINE\Clients\MessagingApi\Model\FlexMessage([
                 'type' => 'flex',
-                'altText' => '🔔 แจ้งเตือน: อีก 1 ชั่วโมงจะถึงเวลานัดสัมภาษณ์ครับ',
+                'altText' => '🔔 แจ้งเตือน: อีก 1 ชั่วโมงจะถึงเวลานัดหมายครับ',
                 'contents' => $flexBubble,
             ]);
 

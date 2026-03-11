@@ -1,0 +1,15 @@
+{
+  "events": [
+    {
+      "type": "postback",
+      "replyToken": "nHuyWiB7yP5Zw52FIkcQobQuGDXCTA",
+      "source": {
+        "userId": "U4af4980629...",
+        "type": "user"
+      },
+      "postback": {
+        "data": "action=confirm&interview_id=1"
+      }
+    }
+  ]
+}

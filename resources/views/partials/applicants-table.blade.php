@@ -26,7 +26,7 @@
                 @endswitch"
                 style="appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22 fill=%22%236b7280%22%3E%3Cpath fill-rule=%22evenodd%22 d=%22M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z%22 clip-rule=%22evenodd%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.4rem center; background-size: 1em;">
                 <option value="pending_review" {{ $applicant->status == 'pending_review' ? 'selected' : '' }}>รอตรวจสอบ</option>
-                <option value="scheduled" {{ $applicant->status == 'scheduled' ? 'selected' : '' }}>นัดสัมภาษณ์แล้ว</option>
+                <option value="scheduled" {{ $applicant->status == 'scheduled' ? 'selected' : '' }}>นัดหมายแล้ว</option>
                 <option value="time_confirmed" {{ $applicant->status == 'time_confirmed' ? 'selected' : '' }}>ยืนยันเวลานัด</option>
                 <option value="attendance_confirmed" {{ $applicant->status == 'attendance_confirmed' ? 'selected' : '' }}>ยืนยันเข้าร่วม</option>
                 <option value="working" {{ $applicant->status == 'working' ? 'selected' : '' }}>✓ ผ่าน → เริ่มทำงาน</option>
@@ -61,7 +61,7 @@
                 <a href="{{ route('interviews.create', ['applicant' => $applicant->id]) }}"
                    class="btn btn-primary btn-sm">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    นัดสัมภาษณ์
+                    นัดหมาย
                 </a>
                 <a href="{{ route('reviews.create', ['applicant' => $applicant->id]) }}"
                    class="btn btn-success btn-sm">
@@ -73,11 +73,11 @@
                     ดูรีวิว
                 </a>
                 @if(in_array($applicant->status, ['scheduled', 'time_confirmed', 'attendance_confirmed', 'reschedule_requested']))
-                    <form action="{{ route('interviews.cancel', ['applicant' => $applicant->id]) }}" method="POST" class="inline w-full mt-1" onsubmit="return confirm('คุณต้องการยกเลิกการนัดสัมภาษณ์ผู้สมัครรายนี้ใช่หรือไม่?');">
+                    <form action="{{ route('interviews.cancel', ['applicant' => $applicant->id]) }}" method="POST" class="inline w-full mt-1" onsubmit="return confirm('คุณต้องการยกเลิกการนัดหมายผู้สมัครรายนี้ใช่หรือไม่?');">
                         @csrf
                         <button type="submit" class="btn btn-sm w-full flex justify-center items-center" style="background-color: #ef4444; color: white;">
                             <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                            ยกเลิกนัดสัมภาษณ์
+                            ยกเลิกนัดหมาย
                         </button>
                     </form>
                 @endif

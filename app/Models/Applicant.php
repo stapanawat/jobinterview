@@ -30,6 +30,7 @@ class Applicant extends Model
         'emergency_contact',
         'preferred_working_hours',
         'job_description',
+        'notes',
     ];
 
     public function interviews()

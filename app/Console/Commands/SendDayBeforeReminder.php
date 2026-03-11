@@ -58,7 +58,7 @@ class SendDayBeforeReminder extends Command
                     'contents' => [
                         new FlexText(['type' => 'text', 'text' => '🔔 แจ้งเตือนล่วงหน้า 1 วัน', 'weight' => 'bold', 'size' => 'lg', 'color' => '#e67e22']),
                         new FlexText(['type' => 'text', 'text' => "สวัสดีครับ คุณ {$applicant->name}", 'margin' => 'md']),
-                        new FlexText(['type' => 'text', 'text' => "พรุ่งนี้คุณมีนัดสัมภาษณ์งาน", 'margin' => 'sm', 'color' => '#555555']),
+                        new FlexText(['type' => 'text', 'text' => "พรุ่งนี้คุณมีนัดหมายงาน", 'margin' => 'sm', 'color' => '#555555']),
                         new FlexText(['type' => 'text', 'text' => "📅 วันที่: {$dateFormatted}", 'margin' => 'md']),
                         new FlexText(['type' => 'text', 'text' => "⏰ เวลา: {$interview->interview_time}", 'margin' => 'sm']),
                         new FlexText(['type' => 'text', 'text' => "📍 สถานที่: {$interview->location}", 'margin' => 'sm', 'wrap' => true]),
@@ -96,7 +96,7 @@ class SendDayBeforeReminder extends Command
 
             $message = new FlexMessage([
                 'type' => 'flex',
-                'altText' => '🔔 แจ้งเตือน: พรุ่งนี้คุณมีนัดสัมภาษณ์งาน',
+                'altText' => '🔔 แจ้งเตือน: พรุ่งนี้คุณมีนัดหมายงาน',
                 'contents' => $flexBubble,
             ]);
 

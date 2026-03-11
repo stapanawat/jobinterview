@@ -17,7 +17,7 @@ $flexBubble = new FlexBubble([
         'type' => 'box',
         'layout' => 'vertical',
         'contents' => [
-            new FlexText(['type' => 'text', 'text' => 'นัดหมายสัมภาษณ์งาน', 'weight' => 'bold', 'size' => 'xl']),
+            new FlexText(['type' => 'text', 'text' => 'นัดหมาย', 'weight' => 'bold', 'size' => 'xl']),
             new FlexText(['type' => 'text', 'text' => "ถึงคุณ Test", 'margin' => 'md']),
             new FlexText(['type' => 'text', 'text' => "วันที่: Test", 'margin' => 'sm']),
             new FlexText(['type' => 'text', 'text' => "เวลา: Test", 'margin' => 'sm']),
@@ -55,7 +55,7 @@ $flexBubble = new FlexBubble([
 
 $message = new FlexMessage([
     'type' => 'flex',
-    'altText' => 'นัดหมายสัมภาษณ์งาน',
+    'altText' => 'นัดหมาย',
     'contents' => $flexBubble
 ]);
 

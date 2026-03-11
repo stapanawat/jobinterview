@@ -40,7 +40,7 @@ class InterviewController extends Controller
             ->first();
 
         if ($existing) {
-            return redirect()->route('dashboard')->with('error', 'ผู้สมัครคนนี้มีนัดสัมภาษณ์อยู่แล้ว');
+            return redirect()->route('dashboard')->with('error', 'ผู้สมัครคนนี้มีนัดหมายอยู่แล้ว');
         }
 
         $interview = Interview::create([
@@ -55,10 +55,10 @@ class InterviewController extends Controller
 
         try {
             $this->sendFlexMessage($applicant, $interview);
-            return redirect()->route('dashboard')->with('success', 'นัดสัมภาษณ์เรียบร้อยแล้ว และส่งข้อความทาง LINE แล้ว!');
+            return redirect()->route('dashboard')->with('success', 'นัดหมายเรียบร้อยแล้ว และส่งข้อความทาง LINE แล้ว!');
         } catch (\Exception $e) {
             Log::error('LINE Push Error: ' . $e->getMessage());
-            return redirect()->route('dashboard')->with('error', 'บันทึกนัดสัมภาษณ์แล้ว แต่ส่งข้อความ LINE ไม่สำเร็จ: ' . substr($e->getMessage(), 0, 150));
+            return redirect()->route('dashboard')->with('error', 'บันทึกนัดหมายแล้ว แต่ส่งข้อความ LINE ไม่สำเร็จ: ' . substr($e->getMessage(), 0, 150));
         }
     }
 
@@ -77,7 +77,7 @@ class InterviewController extends Controller
                 'type' => 'box',
                 'layout' => 'vertical',
                 'contents' => [
-                    new FlexText(['type' => 'text', 'text' => 'นัดหมายสัมภาษณ์งาน', 'weight' => 'bold', 'size' => 'xl']),
+                    new FlexText(['type' => 'text', 'text' => 'นัดหมาย', 'weight' => 'bold', 'size' => 'xl']),
                     new FlexText(['type' => 'text', 'text' => "ถึงคุณ {$applicant->name}", 'margin' => 'md']),
                     new FlexText(['type' => 'text', 'text' => "📅 วันที่: {$dateFormatted}", 'margin' => 'sm']),
                     new FlexText(['type' => 'text', 'text' => "⏰ เวลา: {$interview->interview_time}", 'margin' => 'sm']),
@@ -125,7 +125,7 @@ class InterviewController extends Controller
 
         $message = new FlexMessage([
             'type' => 'flex',
-            'altText' => 'นัดหมายสัมภาษณ์งาน',
+            'altText' => 'นัดหมาย',
             'contents' => $flexBubble
         ]);
 
@@ -161,7 +161,7 @@ class InterviewController extends Controller
 
         $message = new \LINE\Clients\MessagingApi\Model\TextMessage([
             'type' => 'text',
-            'text' => "ขออภัยครับ ทาง HR ได้มีการยกเลิกการนัดหมายสัมภาษณ์ของคุณเรียบร้อยแล้ว หากมีข้อสงสัยเพิ่มเติม สามารถพิมพ์สอบถามทิ้งไว้ได้เลยครับ"
+            'text' => "ขออภัยครับ ทาง HR ได้มีการยกเลิกการนัดหมายของคุณเรียบร้อยแล้ว หากมีข้อสงสัยเพิ่มเติม สามารถพิมพ์สอบถามทิ้งไว้ได้เลยครับ"
         ]);
 
         $request = new PushMessageRequest([
@@ -175,6 +175,6 @@ class InterviewController extends Controller
             \Illuminate\Support\Facades\Log::error("Failed to send cancellation to {$applicant->name}: " . $e->getMessage());
         }
 
-        return redirect()->route('dashboard')->with('success', 'ยกเลิกการนัดสัมภาษณ์เรียบร้อยแล้ว');
+        return redirect()->route('dashboard')->with('success', 'ยกเลิกการนัดหมายเรียบร้อยแล้ว');
     }
 }
