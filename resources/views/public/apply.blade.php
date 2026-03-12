@@ -619,7 +619,7 @@
                                     d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                 <circle cx="12" cy="13" r="3" />
                             </svg></div>
-                        <div class="text">แตะเพื่ออัพโหลดรูปถ่าย</div>
+                        <div class="text">แตะเพื่ออัพโหลดรูปถ่าย (ไม่เกิน 5MB)</div>
                         <img class="preview" id="photo-preview">
                         <input type="file" name="photo" id="photo" accept="image/*"
                             onchange="previewFile(this, 'photo-preview')">
@@ -635,7 +635,7 @@
                                 <circle cx="9" cy="11" r="2" />
                                 <path stroke-linecap="round" d="M13 10h4M13 13h3M7 16c0-1.1.9-2 2-2h0a2 2 0 012 2" />
                             </svg></div>
-                        <div class="text">แตะเพื่ออัพโหลดสำเนาบัตรประชาชน</div>
+                        <div class="text">แตะเพื่ออัพโหลดสำเนาบัตรประชาชน (ไม่เกิน 5MB)</div>
                         <img class="preview" id="idcard-preview">
                         <input type="file" name="id_card_image" id="id_card_image" accept="image/*"
                             onchange="previewFile(this, 'idcard-preview')">
@@ -792,16 +792,21 @@
                         document.getElementById('form-section').style.display = 'none';
                         document.getElementById('success-screen').style.display = 'block';
                     }
+                } else if (response.status === 413) {
+                    alert('เกิดข้อผิดพลาด: ไฟล์มีขนาดใหญ่เกินไป (รวมไม่ควรเกิน 10MB) กรุณาลดขนาดรูปถ่ายแล้วลองใหม่อีกครั้ง');
+                    btn.disabled = false;
+                    btn.querySelector('.btn-text').style.display = 'inline';
+                    btn.querySelector('.spinner').style.display = 'none';
                 } else {
                     console.error('Validation errors:', result.errors || result.message);
-                    alert('เกิดข้อผิดพลาด: ' + (result.message || 'กรุณาลองใหม่อีกครั้ง'));
+                    alert('เกิดข้อผิดพลาด (' + response.status + '): ' + (result.message || 'กรุณาลองใหม่อีกครั้ง'));
                     btn.disabled = false;
                     btn.querySelector('.btn-text').style.display = 'inline';
                     btn.querySelector('.spinner').style.display = 'none';
                 }
             } catch (err) {
                 console.error('Submit error:', err);
-                alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง');
                 btn.disabled = false;
                 btn.querySelector('.btn-text').style.display = 'inline';
                 btn.querySelector('.spinner').style.display = 'none';
