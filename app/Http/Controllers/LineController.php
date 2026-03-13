@@ -130,14 +130,91 @@ class LineController extends Controller
             return;
         }
 
-        // --- View Reviews ---
+        // --- Review Menu ---
+        if ($text === 'รีวิว') {
+            $positions = \App\Models\Position::where('is_active', true)->pluck('name')->toArray();
+            if (empty($positions)) {
+                $this->replyText($replyToken, "ขณะนี้ยังไม่มีตำแหน่งงานเปิดรับครับ");
+                return;
+            }
+
+            $msg = "กรุณาเลือกตำแหน่งงานที่ต้องการรีวิวหรือดูรายละเอียดครับ:";
+            $quickReplyItems = [];
+            foreach (array_slice($positions, 0, 13) as $posName) {
+                $label = mb_strlen($posName) > 20 ? mb_substr($posName, 0, 17) . '...' : $posName;
+                $quickReplyItems[] = new QuickReplyItem([
+                    'type' => 'action',
+                    'action' => new MessageAction([
+                        'type' => 'message',
+                        'label' => $label,
+                        'text' => "รีวิวมือถือ {$posName}", // Use a unique prefix to trigger position actions
+                    ]),
+                ]);
+            }
+            // For implementation simplicity in this context, I'll use "รีวิว [ตำแหน่ง]" as the trigger
+            // But let's use something cleaner for the text
+            foreach ($quickReplyItems as $i => $item) {
+                $posName = $positions[$i];
+                $item->getAction()->setText("เลือกตำแหน่ง {$posName}");
+            }
+
+            $this->replyWithQuickReply($replyToken, $msg, $quickReplyItems);
+            return;
+        }
+
+        if (str_starts_with($text, 'เลือกตำแหน่ง ')) {
+            $posName = trim(mb_substr($text, mb_strlen('เลือกตำแหน่ง ')));
+            $msg = "📍 ตำแหน่ง: {$posName}\nเลือกสิ่งที่คุณต้องการทำ:";
+            $quickReplyItems = [
+                new QuickReplyItem([
+                    'type' => 'action',
+                    'action' => new MessageAction([
+                        'type' => 'message',
+                        'label' => '✍️ เขียนรีวิวร้าน',
+                        'text' => "เริ่มเขียนรีวิว {$posName}",
+                    ]),
+                ]),
+                new QuickReplyItem([
+                    'type' => 'action',
+                    'action' => new MessageAction([
+                        'type' => 'message',
+                        'label' => '⭐ ดูรีวิวร้านค้า',
+                        'text' => "ดูรีวิว {$posName}",
+                    ]),
+                ]),
+                new QuickReplyItem([
+                    'type' => 'action',
+                    'action' => new MessageAction([
+                        'type' => 'message',
+                        'label' => '👤 รีวิวพนักงาน',
+                        'text' => "รีวิวพนักงาน {$posName}",
+                    ]),
+                ]),
+            ];
+            $this->replyWithQuickReply($replyToken, $msg, $quickReplyItems);
+            return;
+        }
+
+        // --- Start Writing Review ---
+        if (str_starts_with($text, 'เริ่มเขียนรีวิว ')) {
+            $posName = trim(mb_substr($text, mb_strlen('เริ่มเขียนรีวิว ')));
+            if (!$applicant || empty($applicant->name)) {
+                $this->replyText($replyToken, "กรุณาสมัครงานก่อนจึงจะรีวิวได้ครับ\nพิมพ์ 'สมัครงาน' เพื่อเริ่มต้น");
+                return;
+            }
+            Cache::put("review_state_{$userId}", 'awaiting_rating', 600);
+            Cache::put("review_position_{$userId}", $posName, 600);
+            $this->replyText($replyToken, "📝 เขียนรีวิวร้านค้า (ตำแหน่ง: {$posName})\n\nกรุณาให้คะแนน 1-5 ครับ\n⭐ 1 = แย่มาก\n⭐⭐ 2 = แย่\n⭐⭐⭐ 3 = ปานกลาง\n⭐⭐⭐⭐ 4 = ดี\n⭐⭐⭐⭐⭐ 5 = ดีมาก");
+            return;
+        }
+
+        // --- View Shop Reviews (Stars only) ---
         if ($text === 'ดูรีวิว' || str_starts_with($text, 'ดูรีวิว ')) {
             $positionFilter = null;
             if (str_starts_with($text, 'ดูรีวิว ') && $text !== 'ดูรีวิว') {
                 $positionFilter = trim(mb_substr($text, mb_strlen('ดูรีวิว ')));
             }
 
-            // Build query
             $query = Review::where('reviewer_type', 'employee');
             if ($positionFilter) {
                 $query->whereHas('applicant', function ($q) use ($positionFilter) {
@@ -145,80 +222,73 @@ class LineController extends Controller
                 });
             }
 
-            $allFiltered = $query->get();
-            $recentReviews = (clone $query)->orderBy('created_at', 'desc')->limit(5)->get();
-
-            if ($allFiltered->isEmpty()) {
-                $noMsg = $positionFilter
-                    ? "📋 ยังไม่มีรีวิวสำหรับตำแหน่ง \"{$positionFilter}\" ครับ"
-                    : "📋 ยังไม่มีรีวิวร้านค้าในขณะนี้ครับ";
-                $this->replyText($replyToken, $noMsg);
+            $allReviews = $query->get();
+            if ($allReviews->isEmpty()) {
+                $msg = $positionFilter ? "📋 ยังไม่มีรีวิวสำหรับตำแหน่ง \"{$positionFilter}\" ครับ" : "📋 ยังไม่มีรีวิวร้านค้าในขณะนี้ครับ";
+                $this->replyText($replyToken, $msg);
                 return;
             }
 
-            $avgRating = round($allFiltered->avg('rating'), 1);
-            $totalCount = $allFiltered->count();
+            $avgRating = round($allReviews->avg('rating'), 1);
+            $totalCount = $allReviews->count();
             $stars = str_repeat('⭐', floor($avgRating));
 
-            $title = $positionFilter
-                ? "📋 รีวิวจากตำแหน่ง: {$positionFilter}"
-                : "📋 รีวิวร้านค้าจากพนักงานทั้งหมด";
-
-            $msg = "{$title}\n";
-            $msg .= "คะแนนเฉลี่ย: {$avgRating} / 5 {$stars} ({$totalCount} รีวิว)\n";
+            $title = $positionFilter ? "📋 รีวิวร้านค้า (ตำแหน่ง: {$positionFilter})" : "📋 รีวิวร้านค้าจากพนักงานทั้งหมด";
+            $msg = "{$title}\n\nคะแนนเฉลี่ย: {$avgRating} / 5 {$stars}\nทั้งหมด {$totalCount} รีวิว\n";
             $msg .= "------------------------\n";
+            $msg .= "แสดงเฉพาะคะแนนดาว:\n";
 
+            $recentReviews = $allReviews->sortByDesc('created_at')->take(10);
             foreach ($recentReviews as $i => $review) {
                 $rStars = str_repeat('⭐', $review->rating);
                 $date = $review->created_at->format('d/m/Y');
-                $comment = $review->comment ?: '-';
-                $name = $review->applicant ? substr($review->applicant->name, 0, 1) . '***' : 'ผู้สมัครงาน';
                 $pos = $review->applicant ? $review->applicant->position : '-';
-                $msg .= "\n" . ($i + 1) . ". {$name} ({$pos})\n   {$rStars}\n   \"{$comment}\"\n   📅 {$date}\n";
+                $msg .= "\n" . ($i + 1) . ". [{$pos}] {$rStars} (📅 {$date})";
             }
 
-            if ($totalCount > 5) {
-                $msg .= "\n(แสดง 5 รายการล่าสุดจากทั้งหมด {$totalCount} รายการ)";
+            if ($totalCount > 10) {
+                $msg .= "\n\n(แสดง 10 รายการล่าสุด)";
             }
 
-            // Build Quick Reply buttons for positions
-            $positions = \App\Models\Position::where('is_active', true)->pluck('name')->toArray();
-            $quickReplyItems = [];
-
-            // "ทั้งหมด" button
-            $quickReplyItems[] = new QuickReplyItem([
-                'type' => 'action',
-                'action' => new MessageAction([
-                    'type' => 'message',
-                    'label' => 'ทั้งหมด',
-                    'text' => 'ดูรีวิว',
-                ]),
-            ]);
-
-            foreach (array_slice($positions, 0, 12) as $posName) {
-                $label = mb_strlen($posName) > 20 ? mb_substr($posName, 0, 17) . '...' : $posName;
-                $quickReplyItems[] = new QuickReplyItem([
-                    'type' => 'action',
-                    'action' => new MessageAction([
-                        'type' => 'message',
-                        'label' => $label,
-                        'text' => "ดูรีวิว {$posName}",
-                    ]),
-                ]);
-            }
-
-            $this->replyWithQuickReply($replyToken, $msg, $quickReplyItems);
+            $this->replyText($replyToken, $msg);
             return;
         }
 
-        // --- Review Flow ---
-        if ($text === 'รีวิวร้านค้า') {
-            if (!$applicant || empty($applicant->name)) {
-                $this->replyText($replyToken, "กรุณาสมัครงานก่อนจึงจะรีวิวได้ครับ\nพิมพ์ 'สมัครงาน' เพื่อเริ่มต้น");
+        // --- View Employee Reviews (From Shop) ---
+        if (str_starts_with($text, 'รีวิวพนักงาน')) {
+            $positionFilter = null;
+            if (str_starts_with($text, 'รีวิวพนักงาน ') && $text !== 'รีวิวพนักงาน') {
+                $positionFilter = trim(mb_substr($text, mb_strlen('รีวิวพนักงาน ')));
+            }
+
+            if (!$applicant) {
+                $this->replyText($replyToken, "ไม่พบข้อมูลผู้สมัครงานของคุณครับ");
                 return;
             }
-            Cache::put("review_state_{$userId}", 'awaiting_rating', 600);
-            $this->replyText($replyToken, "📝 รีวิวร้านค้า\n\nกรุณาให้คะแนน 1-5 ครับ\n⭐ 1 = แย่มาก\n⭐⭐ 2 = แย่\n⭐⭐⭐ 3 = ปานกลาง\n⭐⭐⭐⭐ 4 = ดี\n⭐⭐⭐⭐⭐ 5 = ดีมาก");
+
+            $query = Review::where('reviewer_type', 'shop')->where('applicant_id', $applicant->id);
+            if ($positionFilter) {
+                $query->whereHas('applicant', function ($q) use ($positionFilter) {
+                    $q->where('position', $positionFilter);
+                });
+            }
+
+            $myReviews = $query->orderBy('created_at', 'desc')->get();
+            if ($myReviews->isEmpty()) {
+                $msg = $positionFilter ? "📋 ไม่พบรีวิวของคุณในตำแหน่ง \"{$positionFilter}\" ครับ" : "📋 คุณยังไม่มีรีวิวจากพนักงานครับ";
+                $this->replyText($replyToken, $msg);
+                return;
+            }
+
+            $msg = "👤 รีวิวพนักงานของคุณ:\n";
+            foreach ($myReviews as $i => $review) {
+                $rStars = str_repeat('⭐', $review->rating);
+                $date = $review->created_at->format('d/m/Y');
+                $comment = $review->comment ?: '-';
+                $pos = $review->applicant ? $review->applicant->position : '-';
+                $msg .= "\n" . ($i + 1) . ". ตําแหน่ง: {$pos}\n   คะแนน: {$rStars}\n   ความเห็น: \"{$comment}\"\n   📅 {$date}\n";
+            }
+            $this->replyText($replyToken, $msg);
             return;
         }
 
@@ -236,10 +306,11 @@ class LineController extends Controller
 
         if ($reviewState === 'awaiting_comment') {
             $rating = Cache::get("review_rating_{$userId}");
+            $posName = Cache::get("review_position_{$userId}");
             $comment = ($text === 'ข้าม') ? null : $text;
 
             Review::create([
-                'applicant_id' => $applicant->id,
+                'applicant_id' => $applicant ? $applicant->id : null,
                 'reviewer_type' => 'employee',
                 'rating' => $rating,
                 'comment' => $comment,
@@ -248,10 +319,11 @@ class LineController extends Controller
             // Clear cache
             Cache::forget("review_state_{$userId}");
             Cache::forget("review_rating_{$userId}");
+            Cache::forget("review_position_{$userId}");
 
             $stars = str_repeat('⭐', $rating);
-            $now = now()->format('n/j/Y H:i:s');
-            $summary = "บันทึกรีวิวเรียบร้อย!\n\nชื่อ: {$applicant->name}\nคะแนน: {$stars}\nความคิดเห็น: " . ($comment ?: '-') . "\nเวลา: {$now}\n\nขอบคุณสำหรับรีวิวครับ 🙏";
+            $now = now()->format('d/m/Y H:i:s');
+            $summary = "บันทึกรีวิวเรียบร้อย!\n\nตำแหน่งที่รีวิว: {$posName}\nชื่อ: " . ($applicant ? $applicant->name : 'ผู้สมัครงาน') . "\nคะแนน: {$stars}\nความคิดเห็น: " . ($comment ?: '-') . "\nเวลา: {$now}\n\nขอบคุณสำหรับรีวิวครับ 🙏";
             $this->replyText($replyToken, $summary);
             return;
         }
@@ -262,7 +334,7 @@ class LineController extends Controller
             $liffUrl = "https://liff.line.me/{$liffId}";
 
             if ($applicant && !empty($applicant->name) && !empty($applicant->position)) {
-                $this->replyText($replyToken, "ข้อมูลของคุณอยู่ในระบบแล้วครับ รอการติดต่อจาก HR นะครับ\n\nหากต้องการสมัครใหม่ กดลิงก์ด้านล่างได้เลย:\n{$liffUrl}\n\nพิมพ์ 'รีวิวร้านค้า' เพื่อรีวิวร้านค้า\nพิมพ์ 'ดูรีวิว' เพื่อดูรีวิวของร้าน\nพิมพ์ 'วิธีใช้งาน' เพื่อดูคำแนะนำ");
+                $this->replyText($replyToken, "ข้อมูลของคุณอยู่ในระบบแล้วครับ รอการติดต่อจาก HR นะครับ\n\nหากต้องการสมัครใหม่ กดลิงก์ด้านล่างได้เลย:\n{$liffUrl}\n\nพิมพ์ 'รีวิว' เพื่อเข้าสู่เมนูรีวิว\nพิมพ์ 'วิธีใช้งาน' เพื่อดูคำแนะนำ");
             } else {
                 $this->replyText($replyToken, "ยินดีต้อนรับสู่ระบบสมัครงานครับ 🎉\n\nกดลิงก์ด้านล่างเพื่อกรอกใบสมัคร:\n{$liffUrl}\n\nสะดวก รวดเร็ว กรอกข้อมูลครบจบในหน้าเดียว! 📝");
             }
@@ -271,7 +343,7 @@ class LineController extends Controller
 
         if ($text === 'ยืนยันการส่งใบสมัคร') {
             if ($applicant && !empty($applicant->name)) {
-                $time = $applicant->updated_at->timezone('Asia/Bangkok')->format('n/j/Y H:i:s');
+                $time = $applicant->updated_at->timezone('Asia/Bangkok')->format('d/m/Y H:i:s');
                 $replyText = "มีผู้สมัครใหม่!\n\nชื่อ: {$applicant->name}\nเบอร์: {$applicant->phone}\nตำแหน่ง: {$applicant->position}\nเวลา: {$time}\n\n\"🎉 สมัครงานสำเร็จครับ! ทางเราได้รับข้อมูลของคุณ {$applicant->name} สมัครตำแหน่ง {$applicant->position} เรียบร้อยแล้ว โปรดรอการติดต่อกลับจากทีม HR เพื่อร่วมนัดหมายในขั้นตอนต่อไปครับ หากต้องการสอบถามเพิ่มเติม สามารถพิมพ์ข้อความทิ้งไว้ได้เลยครับ\"";
                 $this->replyText($replyToken, $replyText);
             }
@@ -279,7 +351,7 @@ class LineController extends Controller
         }
 
         if ($applicant && !empty($applicant->name)) {
-            $this->replyText($replyToken, "ข้อมูลของคุณอยู่ในระบบแล้ว รอการติดต่อจาก HR นะครับ\n\nพิมพ์ 'รีวิวร้านค้า' เพื่อรีวิวร้านค้า\nพิมพ์ 'ดูรีวิว' เพื่อดูรีวิวของคุณ\nพิมพ์ 'วิธีใช้งาน' เพื่อดูคำแนะนำอีกครั้งครับ");
+            $this->replyText($replyToken, "ข้อมูลของคุณอยู่ในระบบแล้ว รอการติดต่อจาก HR นะครับ\n\nพิมพ์ 'รีวิว' เพื่อเข้าสู่เมนูรีวิว\nพิมพ์ 'วิธีใช้งาน' เพื่อดูคำแนะนำอีกครั้งครับ");
         }
     }
 
@@ -291,10 +363,9 @@ class LineController extends Controller
         $tutorial = "👋 ยินดีต้อนรับสู่ระบบ HR PKB!\n\n" .
             "ผมเป็นระบบอัตโนมัติที่จะช่วยจัดการเรื่องการสมัครงานและการนัดหมายของคุณครับ\n\n" .
             "✨ สิ่งที่คุณสามารถทำได้:\n\n" .
-            "1️⃣ พิมพ์ 'สมัครงาน' — รับลิงก์ฟอร์มสมัครงานออนไลน์ กรอกครบจบในหน้าเดียว\n" .
-            "2️⃣ พิมพ์ 'ดูรีวิว' — ดูรีวิวร้านค้าจากพนักงานคนอื่นๆ\n" .
-            "3️⃣ พิมพ์ 'รีวิวร้านค้า' — แบ่งปันประสบการณ์การทำงาน\n" .
-            "4️⃣ พิมพ์ 'วิธีใช้งาน' — เรียกดูคำแนะนำนี้ได้ทุกเมื่อ\n\n" .
+            "1️⃣ พิมพ์ 'สมัครงาน' — รับลิงก์ฟอร์มสมัครงานออนไลน์\n" .
+            "2️⃣ พิมพ์ 'รีวิว' — เข้าสู่เมนูรีวิว (เลือกตำแหน่งงาน/ดูดาวร้านค้า/รีวิวพนักงาน)\n" .
+            "3️⃣ พิมพ์ 'วิธีใช้งาน' — เรียกดูคำแนะนำนี้ได้ทุกเมื่อ\n\n" .
             "📍 เมื่อมีการนัดหมาย ระบบจะส่งข้อความหาคุณเพื่อให้กดยืนยันหรือขอเลื่อนได้ทันที\n" .
             "📍 ล่วงหน้า 1 วัน ระบบจะถามยืนยันว่ามาแน่นอนหรือไม่\n\n" .
             "🔗 สมัครงานเลย: {$liffUrl}\n\n" .
