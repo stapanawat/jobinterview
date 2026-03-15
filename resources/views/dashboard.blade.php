@@ -132,18 +132,43 @@
         <div class="card-body">
             <form method="GET" action="{{ route('dashboard') }}" class="flex flex-wrap items-end gap-4" id="dashboardFilterForm">
                 <div class="flex-1 min-w-[200px] max-w-sm">
-                    <label class="form-label">ช่วงเวลา</label>
-                    <select name="date_filter" class="form-select w-full" onchange="document.getElementById('dashboardFilterForm').submit()">
+                    <label class="form-label text-gray-700 font-semibold mb-1.5 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        ช่วงเวลา
+                    </label>
+                    <select name="date_filter" class="form-select w-full rounded-xl border-gray-200 focus:ring-brand-500 focus:border-brand-500 transition-all shadow-sm" onchange="document.getElementById('dashboardFilterForm').submit()">
                         <option value="">ทั้งหมด (ล่าสุด)</option>
-                        <option value="today" {{ (isset($dateFilter) && $dateFilter === 'today') ? 'selected' : '' }}>วันนี้</option>
-                        <option value="yesterday" {{ (isset($dateFilter) && $dateFilter === 'yesterday') ? 'selected' : '' }}>เมื่อวาน</option>
-                        <option value="this_week" {{ (isset($dateFilter) && $dateFilter === 'this_week') ? 'selected' : '' }}>สัปดาห์นี้</option>
-                        <option value="this_month" {{ (isset($dateFilter) && $dateFilter === 'this_month') ? 'selected' : '' }}>เดือนนี้</option>
+                        <option value="today" {{ (request('date_filter') === 'today') ? 'selected' : '' }}>วันนี้</option>
+                        <option value="yesterday" {{ (request('date_filter') === 'yesterday') ? 'selected' : '' }}>เมื่อวาน</option>
+                        <option value="this_week" {{ (request('date_filter') === 'this_week') ? 'selected' : '' }}>สัปดาห์นี้</option>
+                        <option value="this_month" {{ (request('date_filter') === 'this_month') ? 'selected' : '' }}>เดือนนี้</option>
                     </select>
                 </div>
-                <div class="self-center hidden sm:block text-sm text-gray-500 mb-1">
-                    *ข้อมูลในแดชบอร์ดจะแสดงตามช่วงเวลาที่ถูกเลือก
+
+                <div class="flex-1 min-w-[200px] max-w-sm">
+                    <label class="form-label text-gray-700 font-semibold mb-1.5 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        ค้นหา
+                    </label>
+                    <div class="relative">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="ชื่อ หรือ เบอร์โทรศัพท์..." class="form-input w-full rounded-xl border-gray-200 focus:ring-brand-500 focus:border-brand-500 transition-all shadow-sm pl-4 pr-10">
+                        @if(request('search'))
+                            <a href="{{ route('dashboard', request()->except('search')) }}" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </a>
+                        @endif
+                    </div>
                 </div>
+
+                <div class="mb-1 flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-xl border border-gray-100 shadow-sm">
+                    <div class="relative inline-flex items-center cursor-pointer group">
+                        <input type="checkbox" name="latest_only" value="1" id="latest_only" class="sr-only peer" {{ request('latest_only') ? 'checked' : '' }} onchange="document.getElementById('dashboardFilterForm').submit()">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:after:w-5 after:transition-all peer-checked:bg-brand-600 h-6 w-11 rounded-full after:w-5"></div>
+                        <label for="latest_only" class="ml-3 text-sm font-medium text-gray-700 cursor-pointer select-none">โชว์เฉพาะใบสมัครล่าสุด</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary px-6 mb-1 rounded-xl shadow-sm">ค้นหา</button>
             </form>
         </div>
     </div>
@@ -422,8 +447,24 @@
                         <tr>
                             <td>
                                 <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                                        {{ strtoupper(substr($applicant->name ?: '?', 0, 1)) }}
+                                    <div class="relative">
+                                        <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                                            {{ strtoupper(substr($applicant->name ?: '?', 0, 1)) }}
+                                        </div>
+                                        @php
+                                            $previousCount = \App\Models\Applicant::where(function($q) use ($applicant) {
+                                                if ($applicant->line_user_id) {
+                                                    $q->where('line_user_id', $applicant->line_user_id);
+                                                } else {
+                                                    $q->where('phone', $applicant->phone);
+                                                }
+                                            })->where('id', '<', $applicant->id)->count();
+                                        @endphp
+                                        @if($previousCount > 0)
+                                            <span class="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white" title="เคยสมัครมาแล้ว {{ $previousCount }} ครั้ง">
+                                                {{ $previousCount }}
+                                            </span>
+                                        @endif
                                     </div>
                                     <span class="font-medium text-gray-900">{{ $applicant->name ?: '-' }}</span>
                                 </div>
@@ -500,6 +541,10 @@
                                         <svg class="w-3.5 h-3.5 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                         ดูข้อมูล
                                     </button>
+                                    <a href="{{ route('applicants.history', $applicant->id) }}" class="btn btn-sm" style="background-color: #6366f1; color: white;">
+                                        <svg class="w-3.5 h-3.5 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        ประวัติ
+                                    </a>
                                     <a href="{{ route('interviews.create', ['applicant' => $applicant->id]) }}"
                                        class="btn btn-primary btn-sm">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -573,8 +618,24 @@
                         <tr>
                             <td>
                                 <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 {{ $employee->status === 'working' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600' }}">
-                                        {{ strtoupper(substr($employee->name ?: '?', 0, 1)) }}
+                                    <div class="relative">
+                                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 {{ $employee->status === 'working' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600' }}">
+                                            {{ strtoupper(substr($employee->name ?: '?', 0, 1)) }}
+                                        </div>
+                                        @php
+                                            $previousCount = \App\Models\Applicant::where(function($q) use ($employee) {
+                                                if ($employee->line_user_id) {
+                                                    $q->where('line_user_id', $employee->line_user_id);
+                                                } else {
+                                                    $q->where('phone', $employee->phone);
+                                                }
+                                            })->where('id', '<', $employee->id)->count();
+                                        @endphp
+                                        @if($previousCount > 0)
+                                            <span class="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white" title="เคยสมัครมาแล้ว {{ $previousCount }} ครั้ง">
+                                                {{ $previousCount }}
+                                            </span>
+                                        @endif
                                     </div>
                                     <span class="font-medium text-gray-900">{{ $employee->name ?: '-' }}</span>
                                 </div>
@@ -607,6 +668,10 @@
                                         <svg class="w-3.5 h-3.5 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                         ดูข้อมูล
                                     </button>
+                                    <a href="{{ route('applicants.history', $employee->id) }}" class="btn btn-sm" style="background-color: #6366f1; color: white;">
+                                        <svg class="w-3.5 h-3.5 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        ประวัติ
+                                    </a>
                                     <a href="{{ route('reviews.create', ['applicant' => $employee->id]) }}"
                                        class="btn btn-success btn-sm">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>

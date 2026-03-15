@@ -3,8 +3,24 @@
     <tr class="fade-in">
         <td>
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                    {{ strtoupper(substr($applicant->name ?: '?', 0, 1)) }}
+                <div class="relative">
+                    <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                        {{ strtoupper(substr($applicant->name ?: '?', 0, 1)) }}
+                    </div>
+                    @php
+                        $previousCount = \App\Models\Applicant::where(function($q) use ($applicant) {
+                            if ($applicant->line_user_id) {
+                                $q->where('line_user_id', $applicant->line_user_id);
+                            } else {
+                                $q->where('phone', $applicant->phone);
+                            }
+                        })->where('id', '<', $applicant->id)->count();
+                    @endphp
+                    @if($previousCount > 0)
+                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white" title="เคยสมัครมาแล้ว {{ $previousCount }} ครั้ง">
+                            {{ $previousCount }}
+                        </span>
+                    @endif
                 </div>
                 <span class="font-medium text-gray-900">{{ $applicant->name ?: '-' }}</span>
             </div>
@@ -67,6 +83,10 @@
                    class="btn btn-success btn-sm">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     เขียนรีวิว
+                </a>
+                <a href="{{ route('applicants.history', $applicant->id) }}" class="btn btn-sm" style="background-color: #6366f1; color: white;">
+                    <svg class="w-3.5 h-3.5 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    ประวัติ
                 </a>
                 <a href="{{ route('reviews.index', ['applicant_id' => $applicant->id]) }}"
                    class="btn btn-secondary btn-sm">

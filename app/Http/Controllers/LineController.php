@@ -119,7 +119,7 @@ class LineController extends Controller
 
     private function handleMessage($replyToken, $text, $userId)
     {
-        $applicant = Applicant::where('line_user_id', $userId)->first();
+        $applicant = Applicant::where('line_user_id', $userId)->orderBy('created_at', 'desc')->first();
 
         // Check if user is in the review flow
         $reviewState = Cache::get("review_state_{$userId}");
@@ -147,15 +147,9 @@ class LineController extends Controller
                     'action' => new MessageAction([
                         'type' => 'message',
                         'label' => $label,
-                        'text' => "รีวิวมือถือ {$posName}", // Use a unique prefix to trigger position actions
+                        'text' => "เลือกตำแหน่ง {$posName}", // Consistency
                     ]),
                 ]);
-            }
-            // For implementation simplicity in this context, I'll use "รีวิว [ตำแหน่ง]" as the trigger
-            // But let's use something cleaner for the text
-            foreach ($quickReplyItems as $i => $item) {
-                $posName = $positions[$i];
-                $item->getAction()->setText("เลือกตำแหน่ง {$posName}");
             }
 
             $this->replyWithQuickReply($replyToken, $msg, $quickReplyItems);
@@ -170,7 +164,7 @@ class LineController extends Controller
                     'type' => 'action',
                     'action' => new MessageAction([
                         'type' => 'message',
-                        'label' => '✍️ เขียนรีวิวร้าน',
+                        'label' => '✍️ เขียนรีวิวงาน',
                         'text' => "เริ่มเขียนรีวิว {$posName}",
                     ]),
                 ]),
@@ -178,7 +172,7 @@ class LineController extends Controller
                     'type' => 'action',
                     'action' => new MessageAction([
                         'type' => 'message',
-                        'label' => '⭐ ดูรีวิวร้านค้า',
+                        'label' => '⭐ ดูรีวิวงาน',
                         'text' => "ดูรีวิว {$posName}",
                     ]),
                 ]),
@@ -186,7 +180,7 @@ class LineController extends Controller
                     'type' => 'action',
                     'action' => new MessageAction([
                         'type' => 'message',
-                        'label' => '👤 รีวิวพนักงาน',
+                        'label' => '👤 ดูคะแนนพนักงาน',
                         'text' => "รีวิวพนักงาน {$posName}",
                     ]),
                 ]),
@@ -202,9 +196,16 @@ class LineController extends Controller
                 $this->replyText($replyToken, "กรุณาสมัครงานก่อนจึงจะรีวิวได้ครับ\nพิมพ์ 'สมัครงาน' เพื่อเริ่มต้น");
                 return;
             }
+            // Find the SPECIFIC applicant record for this position to avoid mismatch
+            $targetApplicant = Applicant::where('line_user_id', $userId)->where('position', $posName)->first();
+            if (!$targetApplicant) {
+                $targetApplicant = $applicant; // Fallback
+            }
+            Cache::put("review_applicant_id_{$userId}", $targetApplicant->id, 600);
+            
             Cache::put("review_state_{$userId}", 'awaiting_rating', 600);
             Cache::put("review_position_{$userId}", $posName, 600);
-            $this->replyText($replyToken, "📝 เขียนรีวิวร้านค้า (ตำแหน่ง: {$posName})\n\nกรุณาให้คะแนน 1-5 ครับ\n⭐ 1 = แย่มาก\n⭐⭐ 2 = แย่\n⭐⭐⭐ 3 = ปานกลาง\n⭐⭐⭐⭐ 4 = ดี\n⭐⭐⭐⭐⭐ 5 = ดีมาก");
+            $this->replyText($replyToken, "📝 เขียนรีวิวงาน (ตำแหน่ง: {$posName})\n\nกรุณาให้คะแนน 1-5 ครับ\n⭐ 1 = แย่มาก\n⭐⭐ 2 = แย่\n⭐⭐⭐ 3 = ปานกลาง\n⭐⭐⭐⭐ 4 = ดี\n⭐⭐⭐⭐⭐ 5 = ดีมาก");
             return;
         }
 
@@ -215,14 +216,14 @@ class LineController extends Controller
                 $positionFilter = trim(mb_substr($text, mb_strlen('ดูรีวิว ')));
             }
 
-            $query = Review::where('reviewer_type', 'employee');
+            $query = Review::with('applicant')->where('reviewer_type', 'employee');
             if ($positionFilter) {
                 $query->whereHas('applicant', function ($q) use ($positionFilter) {
                     $q->where('position', $positionFilter);
                 });
             }
 
-            $allReviews = $query->get();
+            $allReviews = $query->orderBy('created_at', 'desc')->get();
             if ($allReviews->isEmpty()) {
                 $msg = $positionFilter ? "📋 ยังไม่มีรีวิวสำหรับตำแหน่ง \"{$positionFilter}\" ครับ" : "📋 ยังไม่มีรีวิวร้านค้าในขณะนี้ครับ";
                 $this->replyText($replyToken, $msg);
@@ -232,18 +233,18 @@ class LineController extends Controller
             $avgRating = round($allReviews->avg('rating'), 1);
             $totalCount = $allReviews->count();
             $stars = str_repeat('⭐', floor($avgRating));
-
-            $title = $positionFilter ? "📋 รีวิวร้านค้า (ตำแหน่ง: {$positionFilter})" : "📋 รีวิวร้านค้าจากพนักงานทั้งหมด";
+            
+            $title = $positionFilter ? "📋 ดูรีวิวงาน (ตำแหน่ง: {$positionFilter})" : "📋 ดูรีวิวงานจากพนักงานทั้งหมด";
             $msg = "{$title}\n\nคะแนนเฉลี่ย: {$avgRating} / 5 {$stars}\nทั้งหมด {$totalCount} รีวิว\n";
             $msg .= "------------------------\n";
             $msg .= "แสดงเฉพาะคะแนนดาว:\n";
-
-            $recentReviews = $allReviews->sortByDesc('created_at')->take(10);
+            $recentReviews = $allReviews->take(10);
             foreach ($recentReviews as $i => $review) {
                 $rStars = str_repeat('⭐', $review->rating);
                 $date = $review->created_at->format('d/m/Y');
                 $pos = $review->applicant ? $review->applicant->position : '-';
-                $msg .= "\n" . ($i + 1) . ". [{$pos}] {$rStars} (📅 {$date})";
+                $name = $review->applicant ? $review->applicant->name : 'ไม่ระบุชื่อ';
+                $msg .= "\n" . ($i + 1) . ". ผู้รีวิว: {$name}\n   [{$pos}] {$rStars}\n   📅 {$date}\n";
             }
 
             if ($totalCount > 10) {
@@ -261,32 +262,30 @@ class LineController extends Controller
                 $positionFilter = trim(mb_substr($text, mb_strlen('รีวิวพนักงาน ')));
             }
 
-            if (!$applicant) {
-                $this->replyText($replyToken, "ไม่พบข้อมูลผู้สมัครงานของคุณครับ");
-                return;
-            }
-
-            $query = Review::where('reviewer_type', 'shop')->where('applicant_id', $applicant->id);
+            // User specifically wants to see names "everyone the shop reviewed"
+            // So we show general reviews from shop to employees, including names.
+            $query = Review::with('applicant')->where('reviewer_type', 'shop');
             if ($positionFilter) {
                 $query->whereHas('applicant', function ($q) use ($positionFilter) {
                     $q->where('position', $positionFilter);
                 });
             }
 
-            $myReviews = $query->orderBy('created_at', 'desc')->get();
-            if ($myReviews->isEmpty()) {
-                $msg = $positionFilter ? "📋 ไม่พบรีวิวของคุณในตำแหน่ง \"{$positionFilter}\" ครับ" : "📋 คุณยังไม่มีรีวิวจากพนักงานครับ";
+            $allReviews = $query->orderBy('created_at', 'desc')->take(10)->get();
+
+            if ($allReviews->isEmpty()) {
+                $msg = $positionFilter ? "📋 ไม่พบรีวิวพนักงานในตำแหน่ง \"{$positionFilter}\" ครับ" : "📋 ยังไม่มีรีวิวพนักงานในขณะนี้ครับ";
                 $this->replyText($replyToken, $msg);
                 return;
             }
 
-            $msg = "👤 รีวิวพนักงานของคุณ:\n";
-            foreach ($myReviews as $i => $review) {
+            $msg = "👤 ดูคะแนนพนักงาน (รีวิวจากทางร้าน):\n";
+            foreach ($allReviews as $i => $review) {
                 $rStars = str_repeat('⭐', $review->rating);
                 $date = $review->created_at->format('d/m/Y');
-                $comment = $review->comment ?: '-';
+                $name = $review->applicant ? $review->applicant->name : 'พนักงาน';
                 $pos = $review->applicant ? $review->applicant->position : '-';
-                $msg .= "\n" . ($i + 1) . ". ตําแหน่ง: {$pos}\n   คะแนน: {$rStars}\n   ความเห็น: \"{$comment}\"\n   📅 {$date}\n";
+                $msg .= "\n" . ($i + 1) . ". พนักงาน: {$name}\n   ตําแหน่ง: {$pos}\n   คะแนน: {$rStars}\n   📅 {$date}\n";
             }
             $this->replyText($replyToken, $msg);
             return;
@@ -309,21 +308,28 @@ class LineController extends Controller
             $posName = Cache::get("review_position_{$userId}");
             $comment = ($text === 'ข้าม') ? null : $text;
 
-            Review::create([
-                'applicant_id' => $applicant ? $applicant->id : null,
-                'reviewer_type' => 'employee',
-                'rating' => $rating,
-                'comment' => $comment,
-            ]);
+            $review = new Review();
+            $review->applicant_id = Cache::get("review_applicant_id_{$userId}") ?? ($applicant ? $applicant->id : null);
+            $review->reviewer_type = 'employee';
+            $review->rating = $rating;
+            $review->comment = $comment;
+            
+            if ($review->applicant_id) {
+                $review->save();
+                Log::info("Review saved for applicant ID: {$review->applicant_id}");
+            } else {
+                Log::warning("Could not save review: No applicant ID found for user {$userId}");
+            }
 
             // Clear cache
             Cache::forget("review_state_{$userId}");
             Cache::forget("review_rating_{$userId}");
             Cache::forget("review_position_{$userId}");
+            Cache::forget("review_applicant_id_{$userId}");
 
             $stars = str_repeat('⭐', $rating);
             $now = now()->format('d/m/Y H:i:s');
-            $summary = "บันทึกรีวิวเรียบร้อย!\n\nตำแหน่งที่รีวิว: {$posName}\nชื่อ: " . ($applicant ? $applicant->name : 'ผู้สมัครงาน') . "\nคะแนน: {$stars}\nความคิดเห็น: " . ($comment ?: '-') . "\nเวลา: {$now}\n\nขอบคุณสำหรับรีวิวครับ 🙏";
+            $summary = "บันทึกรีวิวเรียบร้อย!\n\nตำแหน่งที่คุณรีวิว: {$posName}\nชื่อ: " . ($applicant ? $applicant->name : 'ผู้สมัครงาน') . "\nคะแนน: {$stars}\n\n(ความคิดเห็นของคุณถูกส่งเป็น Feedback ถึงบริษัทเรียบร้อยแล้วครับ)\n\nเวลา: {$now}\n\nขอบคุณสำหรับรีวิวครับ 🙏";
             $this->replyText($replyToken, $summary);
             return;
         }
@@ -364,7 +370,7 @@ class LineController extends Controller
             "ผมเป็นระบบอัตโนมัติที่จะช่วยจัดการเรื่องการสมัครงานและการนัดหมายของคุณครับ\n\n" .
             "✨ สิ่งที่คุณสามารถทำได้:\n\n" .
             "1️⃣ พิมพ์ 'สมัครงาน' — รับลิงก์ฟอร์มสมัครงานออนไลน์\n" .
-            "2️⃣ พิมพ์ 'รีวิว' — เข้าสู่เมนูรีวิว (เลือกตำแหน่งงาน/ดูดาวร้านค้า/รีวิวพนักงาน)\n" .
+            "2️⃣ พิมพ์ 'รีวิว' — เข้าสู่เมนู เขียนรีวิวงาน/ดูรีวิวงาน/ดูคะแนนพนักงาน\n" .
             "3️⃣ พิมพ์ 'วิธีใช้งาน' — เรียกดูคำแนะนำนี้ได้ทุกเมื่อ\n\n" .
             "📍 เมื่อมีการนัดหมาย ระบบจะส่งข้อความหาคุณเพื่อให้กดยืนยันหรือขอเลื่อนได้ทันที\n" .
             "📍 ล่วงหน้า 1 วัน ระบบจะถามยืนยันว่ามาแน่นอนหรือไม่\n\n" .

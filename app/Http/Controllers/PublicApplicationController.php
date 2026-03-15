@@ -22,7 +22,7 @@ class PublicApplicationController extends Controller
         $reviews = \App\Models\Review::with('applicant')
             ->where('reviewer_type', 'employee')
             ->orderBy('created_at', 'desc')
-            ->limit(20)
+            ->limit(5)
             ->get();
 
         $avgRating = \App\Models\Review::where('reviewer_type', 'employee')->avg('rating');
@@ -33,12 +33,33 @@ class PublicApplicationController extends Controller
         return view('public.apply', compact('liffId', 'reviews', 'avgRating', 'totalReviews', 'positions'));
     }
 
+    public function allReviews(Request $request)
+    {
+        $query = \App\Models\Review::with('applicant')
+            ->where('reviewer_type', 'employee')
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('position')) {
+            $query->whereHas('applicant', function ($q) use ($request) {
+                $q->where('position', $request->position);
+            });
+        }
+
+        $reviews = $query->paginate(20)->onEachSide(0);
+
+        $avgRating = \App\Models\Review::where('reviewer_type', 'employee')->avg('rating');
+        $totalReviews = \App\Models\Review::where('reviewer_type', 'employee')->count();
+        $positions = \App\Models\Position::where('is_active', true)->get();
+
+        return view('public.reviews', compact('reviews', 'avgRating', 'totalReviews', 'positions'));
+    }
+
     /**
      * Handle form submission
      */
     public function submitForm(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'line_user_id' => 'required|string',
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
@@ -69,58 +90,51 @@ class PublicApplicationController extends Controller
             'photo.max' => 'ไฟล์รูปถ่ายต้องไม่เกิน 5MB',
         ]);
 
-        // Handle file uploads
-        $idCardPath = null;
-        $photoPath = null;
+        // Prepare data for creation
+        $applicantData = [
+            'line_user_id' => $validatedData['line_user_id'],
+            'name' => $validatedData['name'],
+            'phone' => $validatedData['phone'],
+            'position' => $validatedData['position'],
+            'address' => $validatedData['address'] ?? null,
+            'experience' => $validatedData['experience'] ?? null,
+            'line_display_name' => $request->line_display_name, // Assuming these come from request directly, not validated
+            'line_picture_url' => $request->line_picture_url,   // Assuming these come from request directly, not validated
+            'pdpa_accepted' => true,
+            'status' => 'pending_review',
+            'current_residence' => $validatedData['current_residence'] ?? null,
+            'current_occupation' => $validatedData['current_occupation'] ?? null,
+            'age' => $validatedData['age'] ?? null,
+            'education_level' => $validatedData['education_level'] ?? null,
+            'number_of_children' => $validatedData['number_of_children'] ?? null,
+            'can_drive_motorcycle' => $validatedData['can_drive_motorcycle'] ?? null,
+            'pros_and_cons' => $validatedData['pros_and_cons'] ?? null,
+            'life_dream' => $validatedData['life_dream'] ?? null,
+            'emergency_contact' => $validatedData['emergency_contact'] ?? null,
+            'preferred_working_hours' => $validatedData['preferred_working_hours'] ?? null,
+        ];
 
+        // Create a new applicant record for every submission
+        $applicant = Applicant::create($applicantData);
+
+        // Handle file uploads
         try {
             if ($request->hasFile('id_card_image')) {
-                $idCardPath = $request->file('id_card_image')->store('id-cards', 'public');
+                $path = $request->file('id_card_image')->store('id-cards', 'public');
+                $applicant->id_card_image = $path;
             }
 
             if ($request->hasFile('photo')) {
-                $photoPath = $request->file('photo')->store('photos', 'public');
+                $path = $request->file('photo')->store('photos', 'public');
+                $applicant->photo = $path;
             }
+
+            $applicant->save(); // Save the applicant with image paths
         } catch (\Exception $e) {
             Log::warning('File upload failed: ' . $e->getMessage());
         }
 
-        // Build update data (only include image fields if new file was uploaded)
-        $updateData = [
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'position' => $request->position,
-            'address' => $request->address,
-            'experience' => $request->experience,
-            'line_display_name' => $request->line_display_name,
-            'line_picture_url' => $request->line_picture_url,
-            'pdpa_accepted' => true,
-            'status' => 'pending_review',
-            'current_residence' => $request->current_residence,
-            'current_occupation' => $request->current_occupation,
-            'age' => $request->age,
-            'education_level' => $request->education_level,
-            'number_of_children' => $request->number_of_children,
-            'can_drive_motorcycle' => $request->can_drive_motorcycle,
-            'pros_and_cons' => $request->pros_and_cons,
-            'life_dream' => $request->life_dream,
-            'emergency_contact' => $request->emergency_contact,
-            'preferred_working_hours' => $request->preferred_working_hours,
-        ];
 
-        // Only update image paths if new files were uploaded
-        if ($idCardPath) {
-            $updateData['id_card_image'] = $idCardPath;
-        }
-        if ($photoPath) {
-            $updateData['photo'] = $photoPath;
-        }
-
-        // Create or update applicant
-        $applicant = Applicant::updateOrCreate(
-            ['line_user_id' => $request->line_user_id],
-            $updateData
-        );
 
         return response()->json(['success' => true, 'message' => 'สมัครงานสำเร็จ!']);
     }

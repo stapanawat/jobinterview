@@ -458,6 +458,17 @@
                                 </svg>@endfor</div>
                             </div>
                         @endforeach
+                        
+                        @if($totalReviews > 5)
+                            <div style="text-align: center; margin-top: 12px;">
+                                <a href="{{ route('public.reviews') }}" style="font-size: 13px; color: #2E7D32; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    ดูรีวิวทั้งหมด ({{ $totalReviews }})
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            </div>
+                        @endif
                     @endif
                 </div>
             </div>

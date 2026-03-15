@@ -4,9 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Applicant extends Model
+class ApplicantHistory extends Model
 {
     protected $fillable = [
+        'applicant_id',
         'line_user_id',
         'name',
         'phone',
@@ -29,22 +30,10 @@ class Applicant extends Model
         'life_dream',
         'emergency_contact',
         'preferred_working_hours',
-        'job_description',
-        'notes',
     ];
 
-    public function interviews()
+    public function applicant()
     {
-        return $this->hasMany(Interview::class);
-    }
-
-    public function reviews()
-    {
-        return $this->hasMany(Review::class);
-    }
-
-    public function histories()
-    {
-        return $this->hasMany(ApplicantHistory::class);
+        return $this->belongsTo(Applicant::class);
     }
 }

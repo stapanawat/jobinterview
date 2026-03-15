@@ -14,6 +14,32 @@ class DashboardController extends Controller
     {
         $query = Applicant::with('interviews')->orderBy('updated_at', 'desc');
 
+        // Search Filter
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        // Latest Only Filter
+        if ($request->boolean('latest_only')) {
+            // Group by line_user_id and select newest ID
+            $latestIds = Applicant::selectRaw('MAX(id) as id')
+                ->whereNotNull('line_user_id')
+                ->groupBy('line_user_id')
+                ->pluck('id');
+            
+            // For applicants without line_user_id, we might still want to group by phone
+            $latestPhoneIds = Applicant::selectRaw('MAX(id) as id')
+                ->whereNull('line_user_id')
+                ->groupBy('phone')
+                ->pluck('id');
+
+            $query->whereIn('id', $latestIds->concat($latestPhoneIds));
+        }
+
         $dateFilter = $request->input('date_filter');
         if ($dateFilter) {
             $now = Carbon::now();
@@ -40,6 +66,20 @@ class DashboardController extends Controller
         $employees = $allApplicants->whereIn('status', ['working', 'terminated']);
 
         return view('dashboard', compact('applicants', 'employees', 'stats', 'positions', 'dateFilter'));
+    }
+
+    public function history(Applicant $applicant)
+    {
+        $query = Applicant::orderBy('created_at', 'desc');
+        
+        if ($applicant->line_user_id) {
+            $query->where('line_user_id', $applicant->line_user_id);
+        } else {
+            $query->where('phone', $applicant->phone);
+        }
+
+        $history = $query->get();
+        return view('applicants.history', compact('history', 'applicant'));
     }
 
     public function updates()

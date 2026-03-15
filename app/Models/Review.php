@@ -17,12 +17,6 @@ class Review extends Model
         'rating_diligence',
         'rating_following_instructions',
         'rating_others',
-        'rating_punctuality',
-        'rating_showed_up',
-        'rating_honesty',
-        'rating_diligence',
-        'rating_following_instructions',
-        'rating_others',
     ];
 
     public function applicant()

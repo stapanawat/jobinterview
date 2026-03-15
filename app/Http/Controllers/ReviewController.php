@@ -55,15 +55,10 @@ class ReviewController extends Controller
             }
         }
 
-        $reviews = $query->get();
+        $reviews = $query->paginate(20);
         $positions = Position::where('is_active', true)->orderBy('name')->get();
 
-        // Group reviews by applicant position
-        $groupedReviews = $reviews->groupBy(function ($review) {
-            return $review->applicant?->position ?? 'ไม่ระบุตำแหน่ง';
-        });
-
-        return view('reviews.index', compact('reviews', 'positions', 'groupedReviews', 'applicant'));
+        return view('reviews.index', compact('reviews', 'positions', 'applicant'));
     }
 
     public function create(Request $request)

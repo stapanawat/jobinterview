@@ -34,6 +34,7 @@ Route::get('/cron/remind-immediate', function () {
 // Public application form (LIFF)
 Route::get('/apply', [PublicApplicationController::class, 'showForm'])->name('apply.form');
 Route::post('/apply', [PublicApplicationController::class, 'submitForm'])->name('apply.submit');
+Route::get('/reviews/all', [PublicApplicationController::class, 'allReviews'])->name('public.reviews');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -53,6 +54,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::patch('/applicants/{applicant}/status', [DashboardController::class, 'updateStatus'])->name('applicants.updateStatus');
     Route::patch('/applicants/{applicant}/notes', [DashboardController::class, 'updateNotes'])->name('applicants.updateNotes');
+    Route::get('/applicants/{applicant}/history', [DashboardController::class, 'history'])->name('applicants.history');
 });
 
 Route::middleware('auth')->group(function () {
