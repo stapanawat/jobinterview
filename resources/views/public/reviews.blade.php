@@ -318,9 +318,9 @@
                     @if($review->applicant?->position)
                         <div class="review-position">{{ $review->applicant->position }}</div>
                     @endif
-                    @if($review->comment)
+                    {{-- @if($review->comment)
                         <p class="review-comment">{{ $review->comment }}</p>
-                    @endif
+                    @endif --}}
                 </div>
             @empty
                 <div style="text-align: center; padding: 40px; color: #9ca3af;">ยังไม่มีรีวิว</div>
