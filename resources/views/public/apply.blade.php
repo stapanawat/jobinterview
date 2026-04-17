@@ -614,44 +614,7 @@
                         placeholder="เล่าความฝันหรือเป้าหมายในชีวิตของคุณ..."></textarea>
                 </div>
 
-                <!-- File Uploads -->
-                <div class="section-title" style="margin-top: 8px;"><svg width="18" height="18" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                    </svg> แนบเอกสาร</div>
 
-                <div class="form-group">
-                    <label>รูปถ่าย</label>
-                    <div class="file-upload" id="photo-upload">
-                        <div class="icon"><svg width="28" height="28" fill="none" stroke="#666" viewBox="0 0 24 24"
-                                stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                <circle cx="12" cy="13" r="3" />
-                            </svg></div>
-                        <div class="text">แตะเพื่ออัพโหลดรูปถ่าย (ไม่เกิน 5MB)</div>
-                        <img class="preview" id="photo-preview">
-                        <input type="file" name="photo" id="photo" accept="image/*"
-                            onchange="previewFile(this, 'photo-preview')">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>สำเนาบัตรประชาชน</label>
-                    <div class="file-upload" id="idcard-upload">
-                        <div class="icon"><svg width="28" height="28" fill="none" stroke="#666" viewBox="0 0 24 24"
-                                stroke-width="1.5">
-                                <rect x="3" y="4" width="18" height="16" rx="2" />
-                                <circle cx="9" cy="11" r="2" />
-                                <path stroke-linecap="round" d="M13 10h4M13 13h3M7 16c0-1.1.9-2 2-2h0a2 2 0 012 2" />
-                            </svg></div>
-                        <div class="text">แตะเพื่ออัพโหลดสำเนาบัตรประชาชน (ไม่เกิน 5MB)</div>
-                        <img class="preview" id="idcard-preview">
-                        <input type="file" name="id_card_image" id="id_card_image" accept="image/*"
-                            onchange="previewFile(this, 'idcard-preview')">
-                    </div>
-                </div>
 
                 <!-- PDPA -->
                 <div class="pdpa-section">

@@ -350,7 +350,7 @@ class LineController extends Controller
         if ($text === 'ยืนยันการส่งใบสมัคร') {
             if ($applicant && !empty($applicant->name)) {
                 $time = $applicant->updated_at->timezone('Asia/Bangkok')->format('d/m/Y H:i:s');
-                $replyText = "มีผู้สมัครใหม่!\n\nชื่อ: {$applicant->name}\nเบอร์: {$applicant->phone}\nตำแหน่ง: {$applicant->position}\nเวลา: {$time}\n\n\"🎉 สมัครงานสำเร็จครับ! ทางเราได้รับข้อมูลของคุณ {$applicant->name} สมัครตำแหน่ง {$applicant->position} เรียบร้อยแล้ว โปรดรอการติดต่อกลับจากทีม HR เพื่อร่วมนัดหมายในขั้นตอนต่อไปครับ หากต้องการสอบถามเพิ่มเติม สามารถพิมพ์ข้อความทิ้งไว้ได้เลยครับ\"";
+                $replyText = "มีผู้สมัครใหม่!\n\nชื่อ: {$applicant->name}\nเบอร์: {$applicant->phone}\nตำแหน่ง: {$applicant->position}\nเวลา: {$time}\n\n\"🎉 สมัครงานสำเร็จครับ! ทางเราได้รับข้อมูลของคุณ {$applicant->name} สมัครตำแหน่ง {$applicant->position} เรียบร้อยแล้ว\n\n📌 กรุณาส่งรูปถ่ายและสำเนาบัตรประชาชนมาในแชทนี้ เพื่อประกอบการพิจารณาด้วยนะครับ/คะ\n\nโปรดรอการติดต่อกลับจากทีม HR เพื่อร่วมนัดหมายในขั้นตอนต่อไปครับ หากต้องการสอบถามเพิ่มเติม สามารถพิมพ์ข้อความทิ้งไว้ได้เลยครับ\"";
                 $this->replyText($replyToken, $replyText);
             }
             return;
